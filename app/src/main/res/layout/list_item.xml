@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WangGang"
+            android:textSize="25dp"
+            android:textColor="#636262"/>
+
+        <TextView
+            android:id="@+id/device_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15:BE:EF:AB:24:45"
+            android:textSize="20dp"
+            android:layout_below="@+id/device_name"/>
+
+        <TextView
+            android:id="@+id/device_rssi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="-51dbm"
+            android:textSize="20dp"
+            android:layout_margin="20dp"/>
+
+    </RelativeLayout>
+</LinearLayout>
