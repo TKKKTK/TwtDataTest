@@ -10,11 +10,21 @@ public class BleDevice implements Parcelable {
     private String name;
     private String address;
     private BluetoothDevice device;
+    private int rssi;
 
     public BleDevice(ScanResult result){
         device = result.getDevice();
         name = device.getName();
         address = device.getAddress();
+        rssi = result.getRssi();
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    public void setRssi(int rssi) {
+        this.rssi = rssi;
     }
 
     public String getName() {
@@ -46,6 +56,7 @@ public class BleDevice implements Parcelable {
         name = in.readString();
         address = in.readString();
         device = in.readParcelable(BluetoothDevice.class.getClassLoader());
+        rssi = in.readInt();
     }
 
     public static final Creator<BleDevice> CREATOR = new Creator<BleDevice>() {
@@ -71,5 +82,6 @@ public class BleDevice implements Parcelable {
         parcel.writeString(name);
         parcel.writeString(address);
         parcel.writeParcelable(device, i);
+        parcel.writeInt(rssi);
     }
 }

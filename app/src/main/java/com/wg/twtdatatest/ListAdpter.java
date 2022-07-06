@@ -34,9 +34,9 @@ public class ListAdpter extends ArrayAdapter<BleDevice> {
         TextView device_address = (TextView) view.findViewById(R.id.device_address);
         TextView device_rssi = (TextView) view.findViewById(R.id.device_rssi);
 
-        device_name.setText(bleDevice.getName());
+        device_name.setText(bleDevice.getName() == null ? "UnKnown Device" : bleDevice.getName());
         device_address.setText(bleDevice.getAddress());
-
+        device_rssi.setText(bleDevice.getRssi()+"dbm");
         return view;
     }
 }
