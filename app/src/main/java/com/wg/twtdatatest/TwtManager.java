@@ -22,9 +22,9 @@ public class TwtManager extends ObservableBleManager {
     private IreseviceDataListenner ireseviceDataListenner;
 
     //bt_patch(mtu).bin
-    public static final UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");  //蓝牙通讯服务
-    public static final UUID READ_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");  //读特征
-    public static final UUID WRITE_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");  //写特征 //服务
+    public static final UUID SERVICE_UUID = UUID.fromString("0000ffe0-3c17-d293-8e48-14fe2e4da212");  //蓝牙通讯服务
+    public static final UUID READ_UUID = UUID.fromString("0000ffe2-3c17-d293-8e48-14fe2e4da212");  //读特征
+    public static final UUID WRITE_UUID = UUID.fromString("0000ffe3-3c17-d293-8e48-14fe2e4da212");  //写特征 //服务
 
     private BluetoothGattCharacteristic readCharacteristic,writeCharacteristic;
     private boolean supported;
@@ -70,6 +70,9 @@ public class TwtManager extends ObservableBleManager {
         @Override
         protected void initialize() {
             super.initialize();
+            setNotificationCallback(readCharacteristic).with(twowaytoDataCallback);
+            readCharacteristic(readCharacteristic).with(twowaytoDataCallback).enqueue();
+            enableNotifications(readCharacteristic).enqueue();
         }
 
         @Override
@@ -97,14 +100,14 @@ public class TwtManager extends ObservableBleManager {
         }
     }
 
-    public void startRead(){
-        setNotificationCallback(readCharacteristic).with(twowaytoDataCallback);
-        readCharacteristic(readCharacteristic).with(twowaytoDataCallback).enqueue();
-        enableNotifications(readCharacteristic).enqueue();
+    public void ReadData(int cmd){
+        if (writeCharacteristic == null){
+            return;
+        }
+        writeCharacteristic(writeCharacteristic
+        ,new Data(new byte[]{(byte)cmd})
+        ,BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT).with(twowaytoDataCallback).enqueue();
     }
 
-    public void stopRead(){
-        readCharacteristic = null;
-        writeCharacteristic = null;
-    }
+
 }

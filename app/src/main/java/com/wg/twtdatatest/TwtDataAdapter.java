@@ -16,18 +16,18 @@ import no.nordicsemi.android.ble.data.Data;
 
 public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHolder> {
 
-    private List<Data> dataList;
+    private List<DataPacket> dataList;
     private OnItemClikListener onItemClikListener;
 
     public interface OnItemClikListener{
-        void onItemClik(final Data data);
+        void onItemClik(final DataPacket dataPacket);
     }
 
     public void setOnItemClikListener(final OnItemClikListener listener){
         this.onItemClikListener = listener;
     }
 
-    public TwtDataAdapter(List<Data> dataList) {
+    public TwtDataAdapter(List<DataPacket> dataList) {
         this.dataList = dataList;
     }
 
@@ -42,14 +42,15 @@ public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            Data data = dataList.get(position);
-            holder.dataText.setText(data.toString());
+            DataPacket dataPacket = dataList.get(position);
+            holder.dataText.setText(dataPacket.getData().toString());
+            holder.timeRecord.setText(dataPacket.getTimeRecord());
             holder.dataContaner.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (onItemClikListener != null){
                         int position = holder.getLayoutPosition();
-                        final Data data1 = dataList.get(position);
+                        final DataPacket data1 = dataList.get(position);
                         onItemClikListener.onItemClik(data1);
                     }
                 }
@@ -63,10 +64,12 @@ public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView dataText;
+        TextView timeRecord;
         LinearLayout dataContaner;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             dataText = (TextView) itemView.findViewById(R.id.data_text);
+            timeRecord =(TextView) itemView.findViewById(R.id.time_record);
             dataContaner = (LinearLayout) itemView.findViewById(R.id.data_Contaner);
         }
     }

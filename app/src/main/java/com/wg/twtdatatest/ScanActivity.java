@@ -86,8 +86,7 @@ public class ScanActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             String[] perms ={Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
             if (ContextCompat.checkSelfPermission(ScanActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(ScanActivity.this,Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED
-            || ContextCompat.checkSelfPermission(ScanActivity.this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    || ContextCompat.checkSelfPermission(ScanActivity.this,Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(ScanActivity.this,perms,REQUEST_PERMISSION_CODE);
             }
         }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){

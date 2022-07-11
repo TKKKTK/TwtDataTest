@@ -12,6 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="开始接收"/>
+
+    <Button
+        android:id="@+id/stop_resivice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="停止接收"
+        android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/file_layout"
         android:layout_width="match_parent"
