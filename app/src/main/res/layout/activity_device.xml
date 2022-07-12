@@ -34,8 +34,12 @@
             android:id="@+id/file_download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="下载"/>
+            android:text="保存"/>
     </LinearLayout>
+<RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -44,5 +48,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="end|bottom">
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/echarts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:layout_margin="20dp"
+                android:src="@drawable/echarts"
+                app:elevation="8dp" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/download"
+            android:src="@drawable/download"
+            android:layout_gravity="end|bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            app:elevation="8dp"/>
+
+        </LinearLayout>
+    </FrameLayout>
+    </RelativeLayout>
 </LinearLayout>

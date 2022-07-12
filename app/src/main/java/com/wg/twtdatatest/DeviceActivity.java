@@ -1,21 +1,36 @@
 package com.wg.twtdatatest;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +39,7 @@ import java.util.List;
 import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.data.Data;
 
-public class DeviceActivity extends AppCompatActivity implements IreseviceDataListenner, TwtDataAdapter.OnItemClikListener {
+public class DeviceActivity extends AppCompatActivity implements IreseviceDataListenner {
 
     private BleDevice device;
     private TwtManager twtManager;
@@ -37,10 +52,11 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
     private Button save;
     private LinearLayout file_layout;
     private RecyclerView recyclerView;
-    private List<DataPacket> cacheData = new ArrayList<>();
     private DataListThread dataListThread;
     private boolean isResivice;
     private int count;
+    private FloatingActionButton download;
+    private FloatingActionButton echarts;
 
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
     @Override
@@ -85,14 +101,68 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
         recyclerView =(RecyclerView) findViewById(R.id.recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-
+        recyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
         twtDataAdapter = new TwtDataAdapter(dataList);
-        twtDataAdapter.setOnItemClikListener(this);
         recyclerView.setAdapter(twtDataAdapter);
 
         file_layout = (LinearLayout)findViewById(R.id.file_layout);
         file_name = (EditText) findViewById(R.id.file_name);
         save = (Button) findViewById(R.id.file_download);
+        download = (FloatingActionButton) findViewById(R.id.download);
+        download.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                twtManager.ReadData(2);
+                isResivice = false;
+                file_layout.setVisibility(View.VISIBLE);
+                Date dNow = new Date();
+                SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SS");
+                file_name.setText(ft.format(dNow)+".txt");
+
+                save.setOnClickListener(new View.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.Q)
+                    @Override
+                    public void onClick(View view) {
+                        FileDownload fileDownload = new FileDownload(dataList,file_name.getText().toString(),DeviceActivity.this);
+                        String path = fileDownload.save();
+
+                        //调用系统文件管理器打开指定路径目录
+                        if (path != null){
+                            file_layout.setVisibility(View.GONE);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
+                            builder.setTitle("文件保存成功");
+                            builder.setMessage("路径为："+path+"/"+file_name.getText());
+                            builder.setCancelable(true);
+                            builder.setPositiveButton("OK",null);
+                            builder.show();
+                        }else {
+                            file_layout.setVisibility(View.GONE);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
+                            builder.setTitle("文件保存失败");
+                            builder.setCancelable(true);
+                            builder.setPositiveButton("OK",null);
+                            builder.show();
+                        }
+
+                    }
+                });
+            }
+        });
+
+        echarts = (FloatingActionButton) findViewById(R.id.echarts);
+        echarts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent1 = new Intent(DeviceActivity.this,EchartsActivity.class);
+                startActivity(intent1);
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -133,12 +203,8 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
     @Override
     public void DataResevice(Data data) {
             DataPacket dataPacket = new DataPacket(data,getTimeRecord());
-//            cacheData.add(dataPacket);
               dataList.add(dataPacket);
               count++;
-//            twtDataAdapter.notifyItemInserted(dataList.size()-1);
-//            //将RecyclerView定位到最后一行
-//            recyclerView.scrollToPosition(dataList.size()-1);
     }
 
     class DataListThread extends Thread{
@@ -175,22 +241,6 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
                }
         }
     };
-
-    @Override
-    public void onItemClik(DataPacket data) {
-        Date dNow = new Date();
-        SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SS");
-        file_name.setText(ft.format(dNow)+".txt");
-        twtManager.ReadData(2);
-        file_layout.setVisibility(View.VISIBLE);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                 FileDownload fileDownload = new FileDownload(file_name.getText().toString(),DeviceActivity.this);
-                 fileDownload.save(data.getData());
-            }
-        });
-    }
 
     public String getTimeRecord(){
         return new SimpleDateFormat("HH:mm:ss:SS").format(new Date());

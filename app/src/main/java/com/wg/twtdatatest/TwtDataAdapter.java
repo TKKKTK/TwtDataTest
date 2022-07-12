@@ -17,15 +17,6 @@ import no.nordicsemi.android.ble.data.Data;
 public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHolder> {
 
     private List<DataPacket> dataList;
-    private OnItemClikListener onItemClikListener;
-
-    public interface OnItemClikListener{
-        void onItemClik(final DataPacket dataPacket);
-    }
-
-    public void setOnItemClikListener(final OnItemClikListener listener){
-        this.onItemClikListener = listener;
-    }
 
     public TwtDataAdapter(List<DataPacket> dataList) {
         this.dataList = dataList;
@@ -45,16 +36,7 @@ public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHold
             DataPacket dataPacket = dataList.get(position);
             holder.dataText.setText(dataPacket.getData().toString());
             holder.timeRecord.setText(dataPacket.getTimeRecord());
-            holder.dataContaner.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (onItemClikListener != null){
-                        int position = holder.getLayoutPosition();
-                        final DataPacket data1 = dataList.get(position);
-                        onItemClikListener.onItemClik(data1);
-                    }
-                }
-            });
+
     }
 
     @Override
