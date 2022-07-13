@@ -29,9 +29,13 @@ public class TwtManager extends ObservableBleManager {
     private BluetoothGattCharacteristic readCharacteristic,writeCharacteristic;
     private boolean supported;
 
-    public TwtManager(@NonNull Context context,IreseviceDataListenner Listenner) {
+    public TwtManager(@NonNull Context context) {
         super(context);
-        this.ireseviceDataListenner = Listenner;
+
+    }
+
+    public void setIreseviceDataListenner(IreseviceDataListenner listenner){
+        this.ireseviceDataListenner = listenner;
     }
 
     public TwtManager(@NonNull Context context, @NonNull Handler handler) {
@@ -53,7 +57,7 @@ public class TwtManager extends ObservableBleManager {
         @Override
         public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data) {
             super.onDataReceived(device, data);
-            Log.d(TAG, "onDataReceived: "+data);
+//            Log.d(TAG, "onDataReceived: "+data);
             ireseviceDataListenner.DataResevice(data);
         }
 

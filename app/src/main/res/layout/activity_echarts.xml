@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EchartsActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".EchartsActivity"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/echarts_resivce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="接收" />
+
     <WebView
         android:id="@+id/lineChart"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"/>
+
 </LinearLayout>

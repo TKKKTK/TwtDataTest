@@ -39,11 +39,8 @@ import java.util.List;
 import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.data.Data;
 
-public class DeviceActivity extends AppCompatActivity implements IreseviceDataListenner {
+public class DeviceActivity extends TwtBaseActivity implements IreseviceDataListenner {
 
-    private BleDevice device;
-    private TwtManager twtManager;
-    private ConnectRequest connectRequest;
     private Button resivice_button;
     private Button stop_resivice;
     private List<DataPacket> dataList = new ArrayList<>();
@@ -64,15 +61,12 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
 
-        final Intent intent = getIntent();
-        device = intent.getParcelableExtra(EXTRA_DEVICE);
-
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(device.getName() == null ? "UnknownDevice":device.getName());
         actionBar.setSubtitle(device.getAddress());
 
-        twtManager = new TwtManager(getApplication(),this);
-        connect();
+        //设置数据接收监听
+        twtManager.setIreseviceDataListenner(this);
 
         resivice_button = (Button) findViewById(R.id.resivice_button);
         stop_resivice = (Button)findViewById(R.id.stop_resivice);
@@ -154,6 +148,7 @@ public class DeviceActivity extends AppCompatActivity implements IreseviceDataLi
             @Override
             public void onClick(View view) {
                 Intent intent1 = new Intent(DeviceActivity.this,EchartsActivity.class);
+                intent1.putExtra(EXTRA_DEVICE,device);
                 startActivity(intent1);
             }
         });
