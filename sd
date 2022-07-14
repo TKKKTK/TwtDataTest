@@ -1,0 +1,29 @@
+[33mcommit c54ae54a604340b01b8759e424af2404a0ac0de4[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: TKKKTK <1726480362@qq.com>
+Date:   Wed Jul 13 18:10:55 2022 +0800
+
+    图表接收数据
+
+[33mcommit e1a1a5236d42eaf3c56fdc3757bbf644c7bfa673[m
+Author: TKKKTK <1726480362@qq.com>
+Date:   Tue Jul 12 18:10:58 2022 +0800
+
+    分区存储,图表初始化
+
+[33mcommit dc8cae71bd727406be210ec7f3a4a2f86eccb625[m
+Author: TKKKTK <1726480362@qq.com>
+Date:   Mon Jul 11 18:18:32 2022 +0800
+
+    数据接收页面刷新成功
+
+[33mcommit b20e666ed1d464e3642aeb99f4caa74085f9155d[m
+Author: TKKKTK <1726480362@qq.com>
+Date:   Wed Jul 6 17:59:50 2022 +0800
+
+    实现数据接收
+
+[33mcommit ac51f2940bdefca20dc90f9f7e4d9e20301242c6[m
+Author: TKKKTK <1726480362@qq.com>
+Date:   Tue Jul 5 17:53:26 2022 +0800
+
+    扫描界面完成

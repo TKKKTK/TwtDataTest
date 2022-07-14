@@ -6,7 +6,7 @@
 		<script type="text/javascript" src="./js/echarts.js"></script>
 	</head>
 	<body style="margin:0;">
-		<p id="test1"></p>
+		<!-- <p id="test1"></p> -->
 		<div id="test" style="width:auto;height:320px;margin-top: 0;"></div>
        
 	</body>
@@ -26,11 +26,11 @@
 					  return Math.round(value);
 					}
 					var option;
-					var dataList = [];
-					var datax = Array.from(new Array(375).keys()).slice(0);
-					// for (var i = 0; i < 1000; i++) {
-					//   dataList.push(randomData());
-					// }
+					var dataList = new Array(100);
+					var datax = Array.from(new Array(100).keys()).slice(0);
+					for (var i = 0; i < 100; i++) {
+					  dataList.push(0);
+					}
 					option = {
 				  tooltip: {
 					trigger: 'axis',
@@ -47,7 +47,7 @@
 					type: 'category',
 					name:'时间',
 					min:0,
-					max:375,
+					max:100,
 					splitNumber:11,
 					nameLocation:'center',
 					data: datax,
@@ -83,28 +83,31 @@
 				  ]
 				};
 				// 使用刚指定的配置项和数据显示图表。
-				myChart.setOption(option);
+				 myChart.setOption(option);
 				
 				function update(json){
 					//test(json);
-					var newData = JSON.parse(json);
-					test(newData);
+					var newData = json;
+					
 					//console.log(newData);
 					//test(newData.length);
 					for (var i = 0; i < newData.length; i++){
-						// dataList.shift();
-						// datax.shift();
+						//test(newData[i]);
+						dataList.shift();
+						datax.shift();
 						datax.push(datax[datax.length-1]+1);
 						dataList.push(newData[i]);
+						myChart.setOption({
+							  xAxis: {
+								  data: datax
+							  },
+							  series: [{
+								  data: dataList
+							  }]
+						});
 					}
-					myChart.setOption({
-						  xAxis: {
-							  data: datax
-						  },
-						  series: [{
-							  data: dataList
-						  }]
-					});
+					
+					
 					
 				} 
 				

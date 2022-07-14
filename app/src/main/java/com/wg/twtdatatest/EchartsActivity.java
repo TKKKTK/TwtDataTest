@@ -17,6 +17,8 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -84,10 +86,16 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
                                 for (int i = 0; i < size;i++){
                                     catchData[i] = (int)dataqueue.poll();
                                 }
+                                JSONObject jsonObject = new JSONObject();
                                 JSONArray jsonArray = new JSONArray();
                                 for (int item : catchData){
                                     jsonArray.put(item);
                                 }
+//                                try {
+////                                    jsonObject.put(jsonArray);
+//                                } catch (JSONException e) {
+//                                    e.printStackTrace();
+//                                }
                                 //Log.d("EchartsDataListThread", "run: "+jsonArray);
                                 Message message = new Message();
                                 message.what = 1;
@@ -113,7 +121,7 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             if (msg.what == 1){
-                JSONArray jsonArray = (JSONArray) msg.obj;
+                JSONArray jsonArray =  (JSONArray)msg.obj;
                 Log.d("EchartsDataListThread", "run: "+jsonArray);
                 webView.evaluateJavascript("update("+ jsonArray +")",null);
             }
