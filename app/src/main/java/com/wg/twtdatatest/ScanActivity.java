@@ -16,6 +16,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.wg.twtdatatest.Data.BleDevice;
+import com.wg.twtdatatest.UI.DeviceActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 

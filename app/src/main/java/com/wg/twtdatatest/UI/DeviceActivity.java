@@ -1,42 +1,37 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.UI;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.wg.twtdatatest.Data.DataPacket;
+import com.wg.twtdatatest.FileDownload;
+import com.wg.twtdatatest.IreseviceDataListenner;
+import com.wg.twtdatatest.R;
+import com.wg.twtdatatest.TwtBaseActivity;
+import com.wg.twtdatatest.TwtDataAdapter;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.data.Data;
 
 public class DeviceActivity extends TwtBaseActivity implements IreseviceDataListenner {
@@ -147,7 +142,7 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         echarts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent1 = new Intent(DeviceActivity.this,EchartsActivity.class);
+                Intent intent1 = new Intent(DeviceActivity.this, EchartsActivity.class);
                 intent1.putExtra(EXTRA_DEVICE,device);
                 startActivity(intent1);
             }

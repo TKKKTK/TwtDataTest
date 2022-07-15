@@ -1,16 +1,15 @@
 package com.wg.twtdatatest;
 
-import static android.content.ContentValues.TAG;
-
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.wg.twtdatatest.Callback.TwowaytoDataCallback;
 
 import java.util.UUID;
 

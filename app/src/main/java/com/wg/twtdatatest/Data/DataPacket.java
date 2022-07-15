@@ -1,4 +1,4 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.Data;
 
 import no.nordicsemi.android.ble.data.Data;
 

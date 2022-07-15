@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.wg.twtdatatest.Data.BleDevice;
+
 import java.util.List;
 
 public class ListAdpter extends ArrayAdapter<BleDevice> {

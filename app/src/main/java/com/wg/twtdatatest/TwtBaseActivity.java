@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.wg.twtdatatest.Data.BleDevice;
+
 import no.nordicsemi.android.ble.ConnectRequest;
 
 public class TwtBaseActivity extends AppCompatActivity {

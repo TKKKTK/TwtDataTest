@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.wg.twtdatatest.Data.DataPacket;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;

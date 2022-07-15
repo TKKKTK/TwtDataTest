@@ -1,4 +1,4 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.Data;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
