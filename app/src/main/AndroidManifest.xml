@@ -26,11 +26,11 @@
             android:name=".TwtBaseActivity"
             android:exported="false" />
         <activity
-            android:name=".UI.EchartsActivity"
+            android:name=".EchartsActivity"
             android:exported="false"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".UI.DeviceActivity"
+            android:name=".DeviceActivity"
             android:exported="false" />
         <activity
             android:name=".ScanActivity"

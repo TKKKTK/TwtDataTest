@@ -1,4 +1,4 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.wg.twtdatatest.Data.DataPacket;
+import com.wg.twtdatatest.R;
 
 import java.util.List;
 

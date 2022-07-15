@@ -1,4 +1,4 @@
-package com.wg.twtdatatest.UI;
+package com.wg.twtdatatest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,11 +21,8 @@ import android.widget.LinearLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.wg.twtdatatest.Data.DataPacket;
-import com.wg.twtdatatest.FileDownload;
-import com.wg.twtdatatest.IreseviceDataListenner;
-import com.wg.twtdatatest.R;
-import com.wg.twtdatatest.TwtBaseActivity;
-import com.wg.twtdatatest.TwtDataAdapter;
+import com.wg.twtdatatest.util.FileDownload;
+import com.wg.twtdatatest.adapter.TwtDataAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

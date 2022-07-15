@@ -1,4 +1,4 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.util;
 
 public class TypeConversion {
     /**

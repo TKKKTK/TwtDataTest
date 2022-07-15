@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.wg.twtdatatest.Data.BleDevice;
+import com.wg.twtdatatest.TwtManager;
 
 import no.nordicsemi.android.ble.ConnectRequest;
 

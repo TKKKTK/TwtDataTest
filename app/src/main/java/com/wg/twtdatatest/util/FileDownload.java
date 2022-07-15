@@ -1,4 +1,4 @@
-package com.wg.twtdatatest;
+package com.wg.twtdatatest.util;
 
 import static android.content.ContentValues.TAG;
 
