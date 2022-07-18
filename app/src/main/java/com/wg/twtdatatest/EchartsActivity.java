@@ -14,15 +14,20 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.lang.System;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import no.nordicsemi.android.ble.data.Data;
 
@@ -34,7 +39,9 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
     private boolean isResivice;
     private int count;
     private Queue dataqueue = new LinkedList();
-    private Queue catchData = new LinkedList();
+
+    Lock lock = new ReentrantLock();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,51 +67,55 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
         });
 
         //设置数据回调监听
-        twtManager.setIreseviceDataListenner(EchartsActivity.this);
+        //twtManager.setIreseviceDataListenner(EchartsActivity.this);
         echarts_button = (Button) findViewById(R.id.echarts_resivce);
         echarts_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isResivice = true;
+//                isResivice = true;
 //                EchartsDataListThread echartsDataListThread = new EchartsDataListThread();
 //                echartsDataListThread.start();
                 Timer timer = new Timer();
                 TimerTask task = new TimerTask() {
                     @Override
                     public void run() {
-                        synchronized (this){
-                            if (count>0){
+                            if (count>0 && dataqueue.size()>10){
                                 int size = count;
                                 count = 0;
                                 Log.d("EchartsDataListThread", "run: "+size);
                                 int[] catchData = new int[size];
+                                String[] timeData = new String[size];
                                 //数据截取，出队列
                                 for (int i = 0; i < size;i++){
                                     catchData[i] = (int)dataqueue.poll();
+                                    timeData[i] = new SimpleDateFormat("HH:mm:ss:SS").format(new Date());
                                 }
                                 JSONObject jsonObject = new JSONObject();
-                                JSONArray jsonArray = new JSONArray();
+                                JSONArray dataArray = new JSONArray();
+                                JSONArray timeArray = new JSONArray();
                                 for (int item : catchData){
-                                    jsonArray.put(item);
+                                    dataArray.put(item);
                                 }
-//                                try {
-////                                    jsonObject.put(jsonArray);
-//                                } catch (JSONException e) {
-//                                    e.printStackTrace();
-//                                }
+                                for (String item : timeData){
+                                    timeArray.put(item);
+                                }
+
+                                try {
+                                   jsonObject.put("data",dataArray);
+                                   jsonObject.put("time",timeArray);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                                 //Log.d("EchartsDataListThread", "run: "+jsonArray);
                                 Message message = new Message();
                                 message.what = 1;
-                                message.obj = jsonArray;
+                                message.obj = jsonObject;
                                 handler.sendMessage(message);
-
                             }
                         }
-
-                    }
                 };
-                timer.schedule(task,0,50);
-                twtManager.ReadData(1);
+                timer.schedule(task,0,40);
+                //twtManager.ReadData(1);
 
             }
         });
@@ -117,23 +128,25 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             if (msg.what == 1){
-                JSONArray jsonArray =  (JSONArray)msg.obj;
-                Log.d("EchartsDataListThread", "run: "+jsonArray);
-                webView.evaluateJavascript("update("+ jsonArray +")",null);
+                JSONObject jsonObject =  (JSONObject) msg.obj;
+                Log.d("EchartsDataListThread", "run: "+jsonObject);
+                webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
             }
         }
     };
 
     //数据接收
     @Override
-    public synchronized void DataResevice(Data data) {
+    public void DataResevice(Data data) {
         Log.d("EchartsActivity", "DataResevice: "+data);
          int[] dataInts = subData(data.getValue());
+         lock.lock();
          for (int i = 0; i < dataInts.length; i++){
              dataList.add(dataInts[i]);
              dataqueue.add(dataInts[i]);
              count++;
          }
+         lock.unlock();
     }
 
     /**
@@ -171,6 +184,8 @@ public class EchartsActivity extends TwtBaseActivity implements IreseviceDataLis
         }
         return DataInt;
     }
+
+
 
     class EchartsDataListThread extends Thread{
         @Override

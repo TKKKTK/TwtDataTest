@@ -6,7 +6,7 @@
 		<script type="text/javascript" src="./js/echarts.js"></script>
 	</head>
 	<body style="margin:0;">
-		<!-- <p id="test1"></p> -->
+		 <p id="test1"></p>
 		<div id="test" style="width:auto;height:320px;margin-top: 0;"></div>
        
 	</body>
@@ -20,24 +20,17 @@
 					  useDirtyRect: false
 					});
 					var app = {};
-					var value = Math.random()*1000;
-					function randomData() {
-					  value = value + Math.random()* 21 - 10;
-					  return Math.round(value);
-					}
+ 
 					var option;
-					var dataList = new Array(100);
-					var datax = Array.from(new Array(100).keys()).slice(0);
-					for (var i = 0; i < 100; i++) {
-					  dataList.push(0);
-					}
+					var dataList = new Array(1000);
+					var datax = Array.from(new Array(1000).keys()).slice(0);
 					option = {
-				  tooltip: {
-					trigger: 'axis',
-					axisPointer: {
-					  animation: false
-					}
-				  },
+				 //  tooltip: {
+					// trigger: 'axis',
+					// axisPointer: {
+					//   animation: false
+					// }
+				 //  },
                    grid:{
 					top:'5px',
 					right:'10px',
@@ -47,7 +40,7 @@
 					type: 'category',
 					name:'时间',
 					min:0,
-					max:100,
+					max:1000,
 					splitNumber:11,
 					nameLocation:'center',
 					data: datax,
@@ -86,17 +79,19 @@
 				 myChart.setOption(option);
 
 				function update(json){
-					//test(json);
-					var newData = json;
+					// test(json);
+					// var newData = json;
 					
-					//console.log(newData);
-					//test(newData.length);
-					for (var i = 0; i < newData.length; i++){
-						//test(newData[i]);
+					var db = eval(json);
+					// test(typeof db)
+					var timeArr = db.time;
+					var dataArr = db.data;
+					
+					for (var i = 0; i < dataArr.length; i++){
 						dataList.shift();
 						datax.shift();
-						datax.push(datax[datax.length-1]+1);
-						dataList.push(newData[i]);
+						datax.push(timeArr[i]);
+						dataList.push(dataArr[i]);
 						myChart.setOption({
 							  xAxis: {
 								  data: datax
@@ -105,29 +100,8 @@
 								  data: dataList
 							  }]
 						});
-					}
-					
-					
-					
+					}			
 				} 
-				
-				// setInterval(function () {
-				// 			for (var i = 0; i < 2; i++) {
-				// 			  dataList.shift();
-				// 			  datax.shift();
-				// 			  datax.push(datax[datax.length-1]+1);
-				// 			  dataList.push(randomData());
-				// 			  myChart.setOption({
-				// 				  xAxis: {
-				// 					  data: datax
-				// 				  },
-				// 				  series: [{
-				// 					  data: dataList
-				// 				  }]
-				// 			  });
-				// 			}
-
-				// 		  }, 1000);
 				window.addEventListener('resize', myChart.resize);
 	</script>
 </html>

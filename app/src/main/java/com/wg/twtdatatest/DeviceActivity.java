@@ -9,10 +9,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +24,7 @@ import android.widget.LinearLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.wg.twtdatatest.Data.DataPacket;
+import com.wg.twtdatatest.Service.BackgroundService;
 import com.wg.twtdatatest.util.FileDownload;
 import com.wg.twtdatatest.adapter.TwtDataAdapter;
 
@@ -46,19 +50,38 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
     private int count;
     private FloatingActionButton download;
     private FloatingActionButton echarts;
+    private BackgroundService.TwtBinder twtBinder;
 
-    public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
+    //通过服务连接类获取twtBinder对象
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+              twtBinder = (BackgroundService.TwtBinder)iBinder; //获取twtBinder对象
+              twtBinder.connect();//蓝牙连接
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {//服务断开连接时调用
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
+
+        //开启后台服务,连接蓝牙
+        Intent startIntent  = new Intent(this, BackgroundService.class);
+        startIntent.putExtra(EXTRA_DEVICE,device);
+        bindService(startIntent,connection,BIND_AUTO_CREATE);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(device.getName() == null ? "UnknownDevice":device.getName());
         actionBar.setSubtitle(device.getAddress());
 
         //设置数据接收监听
-        twtManager.setIreseviceDataListenner(this);
+//        twtManager.setIreseviceDataListenner(this);
 
         resivice_button = (Button) findViewById(R.id.resivice_button);
         stop_resivice = (Button)findViewById(R.id.stop_resivice);
@@ -67,8 +90,8 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
             public void onClick(View view) {
                 dataListThread = new DataListThread();
                 isResivice = true;
-                dataListThread.start();
-                twtManager.ReadData(1);
+//                dataListThread.start();
+                twtBinder.startReadData();
                 resivice_button.setVisibility(View.GONE);
                 stop_resivice.setVisibility(View.VISIBLE);
             }
@@ -77,7 +100,8 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         stop_resivice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                twtManager.ReadData(2);
+                twtBinder.stopReadData();
+//                twtManager.ReadData(2);
                 isResivice = false;
                 resivice_button.setVisibility(View.VISIBLE);
                 stop_resivice.setVisibility(View.GONE);
@@ -98,7 +122,8 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         download.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                twtManager.ReadData(2);
+                twtBinder.stopReadData();
+//                twtManager.ReadData(2);
                 isResivice = false;
                 file_layout.setVisibility(View.VISIBLE);
                 Date dNow = new Date();
@@ -152,35 +177,11 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /**
-     * 蓝牙建立连接
-     */
-    public void connect(){
-        if (device != null){
-            connectRequest = twtManager.connect(device.getDevice())
-                    .retry(3,100)
-                    .useAutoConnect(false)
-                    .then(d -> connectRequest = null);
-            connectRequest.enqueue();
-        }
-    }
 
-    /**
-     * 蓝牙断开连接
-     */
-    public void disConnect(){
-        device = null;
-        if (connectRequest != null){
-            connectRequest.cancelPendingConnection();
-        }else if (twtManager.isConnected()){
-            twtManager.disconnect().enqueue();
-        }
-    }
 
     @Override
     protected void onStop() {
         super.onStop();
-        disConnect();
     }
 
     /**

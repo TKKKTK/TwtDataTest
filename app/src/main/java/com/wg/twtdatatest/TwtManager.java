@@ -30,7 +30,6 @@ public class TwtManager extends ObservableBleManager {
 
     public TwtManager(@NonNull Context context) {
         super(context);
-
     }
 
     public void setIreseviceDataListenner(IreseviceDataListenner listenner){
