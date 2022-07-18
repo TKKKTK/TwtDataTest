@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.wg.twtdatatest.Data.BleDevice;
@@ -65,7 +66,9 @@ public class BackgroundService extends Service {
          * 开启数据读取
          */
         public void startReadData(){
+            DataThread dataListThread = new DataThread();
             twtManager.ReadData(1);
+            new Thread(dataListThread).start();
         }
 
         /**
@@ -80,29 +83,28 @@ public class BackgroundService extends Service {
 
          @Override
          public void DataResevice(Data data) {
-             Log.d("BackgroundService", "DataResevice: "+data);
+//             Log.d("BackgroundService", "DataResevice: "+data);
              DataPacket dataPacket = new DataPacket(data,getTimeRecord());
-             count++;
-             if (count<=10){
-                 catchList.add(dataPacket);
-             }else{
-                 dataQueue.add(catchList); //满10个包添加进队列
-                 count=0;
-                 catchList.clear();
-             }
+             //发送给前台一条广播
+             Intent intent = new Intent("com.wg.twtdatatest.DATALIST_RESEVICE");
+             intent.putExtra("LIST_DATA",dataPacket);
+             sendBroadcast(intent);
          }
      }
 
     /**
-     * 数据列表线程
+     * 数据处理线程
      */
-    class DataListThread implements Runnable{
+    class DataThread implements Runnable{
          @Override
          public void run() {
              Timer timer = new Timer();
              TimerTask task = new TimerTask() {
                  @Override
                  public void run() {
+                     if (!dataQueue.isEmpty()){
+
+                     }
 
                  }
              };

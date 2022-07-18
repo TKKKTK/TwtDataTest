@@ -9,18 +9,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.wg.twtdatatest.Data.DataPacket;
@@ -35,7 +40,7 @@ import java.util.List;
 
 import no.nordicsemi.android.ble.data.Data;
 
-public class DeviceActivity extends TwtBaseActivity implements IreseviceDataListenner {
+public class DeviceActivity extends TwtBaseActivity{
 
     private Button resivice_button;
     private Button stop_resivice;
@@ -51,6 +56,7 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
     private FloatingActionButton download;
     private FloatingActionButton echarts;
     private BackgroundService.TwtBinder twtBinder;
+    private DataListReceiver dataListReceiver;
 
     //通过服务连接类获取twtBinder对象
     private ServiceConnection connection = new ServiceConnection() {
@@ -76,12 +82,17 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         startIntent.putExtra(EXTRA_DEVICE,device);
         bindService(startIntent,connection,BIND_AUTO_CREATE);
 
+        //标题栏设置设备名和地址
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(device.getName() == null ? "UnknownDevice":device.getName());
         actionBar.setSubtitle(device.getAddress());
 
-        //设置数据接收监听
-//        twtManager.setIreseviceDataListenner(this);
+
+        //开启数据接收的广播
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.wg.twtdatatest.DATALIST_RESEVICE");
+        dataListReceiver = new DataListReceiver();
+        registerReceiver(dataListReceiver,intentFilter);
 
         resivice_button = (Button) findViewById(R.id.resivice_button);
         stop_resivice = (Button)findViewById(R.id.stop_resivice);
@@ -90,7 +101,8 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
             public void onClick(View view) {
                 dataListThread = new DataListThread();
                 isResivice = true;
-//                dataListThread.start();
+                dataListThread.start();
+                //开启后台接收数据
                 twtBinder.startReadData();
                 resivice_button.setVisibility(View.GONE);
                 stop_resivice.setVisibility(View.VISIBLE);
@@ -101,7 +113,6 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
             @Override
             public void onClick(View view) {
                 twtBinder.stopReadData();
-//                twtManager.ReadData(2);
                 isResivice = false;
                 resivice_button.setVisibility(View.VISIBLE);
                 stop_resivice.setVisibility(View.GONE);
@@ -123,7 +134,6 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
             @Override
             public void onClick(View view) {
                 twtBinder.stopReadData();
-//                twtManager.ReadData(2);
                 isResivice = false;
                 file_layout.setVisibility(View.VISIBLE);
                 Date dNow = new Date();
@@ -177,22 +187,23 @@ public class DeviceActivity extends TwtBaseActivity implements IreseviceDataList
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    //接收数据的广播
+    class DataListReceiver extends BroadcastReceiver{
 
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //Toast.makeText(DeviceActivity.this,"数据接收",Toast.LENGTH_LONG).show();
+            DataPacket dataPacket = intent.getParcelableExtra("LIST_DATA");
+            dataList.add(dataPacket);
+            count++;
+            Log.d("DeviceActivity", "onReceive: "+dataPacket.getData());
+        }
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
-    }
-
-    /**
-     * 数据包接收
-     * @param data
-     */
-    @Override
-    public void DataResevice(Data data) {
-            DataPacket dataPacket = new DataPacket(data,getTimeRecord());
-              dataList.add(dataPacket);
-              count++;
+        unregisterReceiver(dataListReceiver);
     }
 
     class DataListThread extends Thread{
