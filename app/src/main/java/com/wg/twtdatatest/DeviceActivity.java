@@ -55,32 +55,13 @@ public class DeviceActivity extends TwtBaseActivity{
     private int count;
     private FloatingActionButton download;
     private FloatingActionButton echarts;
-    private BackgroundService.TwtBinder twtBinder;
     private DataListReceiver dataListReceiver;
 
-    //通过服务连接类获取twtBinder对象
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-              twtBinder = (BackgroundService.TwtBinder)iBinder; //获取twtBinder对象
-              twtBinder.connect();//蓝牙连接
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {//服务断开连接时调用
-
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
-
-        //开启后台服务,连接蓝牙
-        Intent startIntent  = new Intent(this, BackgroundService.class);
-        startIntent.putExtra(EXTRA_DEVICE,device);
-        bindService(startIntent,connection,BIND_AUTO_CREATE);
 
         //标题栏设置设备名和地址
         ActionBar actionBar = getSupportActionBar();
@@ -103,7 +84,7 @@ public class DeviceActivity extends TwtBaseActivity{
                 isResivice = true;
                 dataListThread.start();
                 //开启后台接收数据
-                twtBinder.startReadData();
+                twtBinder.startReadData(BackgroundService.LIST_DATA);
                 resivice_button.setVisibility(View.GONE);
                 stop_resivice.setVisibility(View.VISIBLE);
             }
@@ -140,6 +121,7 @@ public class DeviceActivity extends TwtBaseActivity{
                 SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SS");
                 file_name.setText(ft.format(dNow)+".txt");
 
+                //文件保存按钮
                 save.setOnClickListener(new View.OnClickListener() {
                     @RequiresApi(api = Build.VERSION_CODES.Q)
                     @Override

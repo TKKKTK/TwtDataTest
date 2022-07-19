@@ -31,11 +31,17 @@ public class FileDownload {
     private List<DataPacket> dataList;
     private String file_name;
     private Context context;
-
+    private List echartsData;
     public FileDownload(List<DataPacket> dataPackets, String file_name, Context context){
         this.dataList = dataPackets;
         this.file_name = file_name;
         this.context = context;
+    }
+
+    public FileDownload(String file_name, Context context, List echartsData) {
+        this.file_name = file_name;
+        this.context = context;
+        this.echartsData = echartsData;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
@@ -96,6 +102,74 @@ public class FileDownload {
             }
         }
       return null;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void saveEchartsData(){
+        String content = echartsListString(); // 存储内容解析
+        //判断当前android 版本是否支持分区存储
+        if (!Environment.isExternalStorageLegacy()){
+            //采取分区存储方式
+            //在Android R 下创建文件
+            //获取到一个路径
+            Uri uri = MediaStore.Files.getContentUri("external");
+            //创建一个ContentValue对象，用来给存储文件数据的数据库进行插入操作
+            ContentValues contentValues = new ContentValues();
+            //首先创建zee.txt要存储的路径 要创建的文件的上一级存储目录
+            String path = Environment.DIRECTORY_DOWNLOADS + "/ZEE";
+            //给路径的字段设置键值对
+            contentValues.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ZEE");
+            //设置文件的名字
+            contentValues.put(MediaStore.Downloads.DISPLAY_NAME,file_name);
+            contentValues.put(MediaStore.Downloads.TITLE,"Zee");
+
+            //插入一条数据，然后把生成的这个文件的路径返回回来
+            Uri insert = context.getContentResolver().insert(uri,contentValues);
+
+            OutputStream outputStream = null;
+            try {
+                outputStream = context.getContentResolver().openOutputStream(insert);
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(content.getBytes());
+                bos.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else{
+            String filePath = "/sdcard/";
+            //传统File方式
+            File file = new File(filePath+file_name);
+            OutputStream outputStream = null;
+            if (!file.exists()){
+                try {
+                    file.createNewFile();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                outputStream = new FileOutputStream(file);
+                outputStream.write(content.getBytes());
+                outputStream.close();
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private String echartsListString(){
+        StringBuilder stringBuilder = new StringBuilder();
+         if (echartsData.size()>0){
+             for (Object dataPoint : echartsData){
+                 stringBuilder.append(dataPoint);
+                 stringBuilder.append(" ");
+             }
+         }
+        return stringBuilder.toString();
     }
 
     private String listToString(){
