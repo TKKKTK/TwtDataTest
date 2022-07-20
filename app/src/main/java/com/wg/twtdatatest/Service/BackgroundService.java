@@ -17,6 +17,7 @@ import com.wg.twtdatatest.TwtManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,8 +98,8 @@ public class BackgroundService extends Service {
                    sendBroadcast(intent);
                    break;
                case ECHARTS_DATA:
-                   Log.d("reseviceDataListenner", "DataResevice: "+data);
-                   int[] dataInts = subData(data.getValue());
+                   //Log.d("reseviceDataListenner", "DataResevice: "+data);
+                   int[] dataInts = subData(data.toString());
                    for (int i = 0; i < dataInts.length; i++){
                        count++;
                        if (count<=10){
@@ -135,69 +136,62 @@ public class BackgroundService extends Service {
     /**
      * 数据截取
      */
-    private int[] subData(byte[] bytes){
-        byte[] newData = new byte[15];
-        byte[][] subData = new byte[5][3];
-        int[] intData = new int[5];
-        Queue<Byte> byteQueue = new LinkedList<>();
-        //把包头、脱落检测、校验位、序号包给去除
-        System.arraycopy(bytes,2,newData,0,newData.length);
-//        Log.d("EchartsActivity", "subData: "+new Data(newData));
-        for (int i = 0; i < subData.length; i++){
-            System.arraycopy(newData,i*3,subData[i],0,subData[i].length);
-        }
+    private int[] subData(String hexString){
 
-        //打印原始数据
-        for (int i = 0; i < bytes.length; i++){
-            Log.d("BackgroundService", "subData: " + (int)bytes[i]);
-        }
-
+        String[] arr1 = hexString.split(" ");
+        String[] arr = arr1[1].split("-");
+        //Log.d("字符串转数组后的数据：", "subData: "+ Arrays.toString(arr));
+        int[] dataArr = new int[arr.length];
+        int[] subData = new int[15];
+        int[][] echartsData = new int[5][3];
         /**
-         * 高位变低位，数据位反转
+         * 16进制字符串转整型
          */
-        for (int i = 0;i < subData.length; i++){
-            Stack<Byte> byteStack = new Stack<>();
-            for (int j = 0; j < subData[i].length; j++){
-                //Log.d("BackgroundService", "subData: "+subData[i][j]);
-                byteStack.push(subData[i][j]);
-            }
-            for (int z = 0;z <subData[i].length;z++){
-                subData[i][z] = byteStack.pop();
-                //Log.d("BackgroundService", "subData: "+subData[i][z]);
-            }
+        for (int i = 0;i < arr.length;i++){
+
+            dataArr[i] = Integer.valueOf(arr[i],16);
         }
-
-        /**
-         * 三字节转四字节
-         */
-        for (int i = 0; i < subData.length; i++){
-            intData[i] = byteToInt(subData[i]);
+        //Log.d("十六进制转整型后的数据", "subData: "+Arrays.toString(dataArr));
+        System.arraycopy(dataArr,2,subData,0,15);
+        for (int i = 0; i < echartsData.length;i++){
+            System.arraycopy(subData,i*3,echartsData[i],0,3);
         }
-
-//        List<Byte> subDataList = new ArrayList();
-
-        for (int i = 0; i < subData.length;i++){
-            for (int j = 0; j < subData[i].length;j++){
-//                subDataList.add(subData[i][j]);
-              //  Log.d("BackgroundService", "subData: "+subData[i][j]);
+        //高低位反转
+        for (int i = 0; i<echartsData.length;i++){
+            Stack<Integer> stack = new Stack<Integer>();
+            for (int j = 0;j<echartsData[i].length;j++){
+                 stack.push(echartsData[i][j]);
+            }
+            for (int z = 0;z<echartsData[i].length;z++){
+                echartsData[i][z]=stack.pop();
             }
         }
 
-       // Log.d("BackgroundService", "subData: "+subDataList);
-        return  intData;
+        //存放三字节转四字节的数据
+        int[] newdata = new int[5];
+
+        for (int i=0;i<echartsData.length;i++){
+            //Log.d("高低位反转后的数据:", "subData: "+Arrays.toString(echartsData[i]));
+            newdata[i] = byteToInt(echartsData[i]);
+
+        }
+        //Log.d("三字节转四字节后的数据:", "subData: "+Arrays.toString(newdata));
+        return  newdata;
     }
 
     //三字节转四字节整型
-    private int byteToInt(byte[] bytes){
-        int DataInt = 0x00000000;
+    private int byteToInt(int[] bytes){
+        int DataInt = 0;
         for (int i = 0;i < bytes.length; i++){
             DataInt = (DataInt << 8)|bytes[i];
         }
+        //Log.d("移位后的整型数据：", "byteToInt: "+DataInt);
         if ((DataInt & 0x00800000) == 0x00800000){
             DataInt |= 0xFF000000;
         }else {
             DataInt &= 0x00FFFFFF;
         }
+
         return DataInt;
     }
 

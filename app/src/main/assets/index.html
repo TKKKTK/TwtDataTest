@@ -91,15 +91,16 @@
 						datax.shift();
 						datax.push(timeArr[i]);
 						dataList.push(dataArr[i]);
-						myChart.setOption({
-							  xAxis: {
-								  data: datax
-							  },
-							  series: [{
-								  data: dataList
-							  }]
-						});
-					}			
+					}
+					myChart.setOption({
+						  xAxis: {
+							  data: datax
+						  },
+						  series: [{
+							  data: dataList
+						  }]
+					});
+					
 				} 
 				window.addEventListener('resize', myChart.resize);
 	</script>

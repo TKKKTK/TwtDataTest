@@ -50,8 +50,6 @@ public class EchartsActivity extends TwtBaseActivity {
     private EchartsDataReceiver echartsDataReceiver;
     private Queue<UiEchartsData> echartsDataQueue = new LinkedList<>();
 
-    Lock lock = new ReentrantLock();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,38 +92,38 @@ public class EchartsActivity extends TwtBaseActivity {
                 TimerTask task = new TimerTask() {
                     @Override
                     public void run() {
-                        JSONObject jsonObject = new JSONObject();
-                        JSONArray dataArray = new JSONArray();
-                        JSONArray timeArray = new JSONArray();
-                            if (!echartsDataQueue.isEmpty()){
-
-                                UiEchartsData uiEchartsData = echartsDataQueue.poll();
-                                List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
-                                for (EchartsData echartsData : echartsDataList){
-                                     dataArray.put(echartsData.getDataPoint());
-                                     timeArray.put(echartsData.getTime());
-                                }
-
-                            }else{
-                                for (int i = 0; i < 10; i ++){
-                                    dataArray.put(0);
-                                    timeArray.put(new SimpleDateFormat("HH:mm:ss:SS").format(new Date()));
-                                }
-                            }
-                        try {
-                            jsonObject.put("data",dataArray);
-                            jsonObject.put("time",timeArray);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        //Log.d("EchartsDataListThread", "run: "+jsonArray);
-                        Message message = new Message();
-                        message.what = 1;
-                        message.obj = jsonObject;
-                        handler.sendMessage(message);
+//                        JSONObject jsonObject = new JSONObject();
+//                        JSONArray dataArray = new JSONArray();
+//                        JSONArray timeArray = new JSONArray();
+//                            if (!echartsDataQueue.isEmpty()){
+//
+//                                UiEchartsData uiEchartsData = echartsDataQueue.poll();
+//                                List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
+//                                for (EchartsData echartsData : echartsDataList){
+//                                     dataArray.put(echartsData.getDataPoint());
+//                                     timeArray.put(echartsData.getTime());
+//                                }
+//
+//                            }else{
+//                                for (int i = 0; i < 10; i ++){
+//                                    dataArray.put(0);
+//                                    timeArray.put(new SimpleDateFormat("HH:mm:ss:SS").format(new Date()));
+//                                }
+//                            }
+//                        try {
+//                            jsonObject.put("data",dataArray);
+//                            jsonObject.put("time",timeArray);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                        //Log.d("EchartsDataListThread", "run: "+jsonArray);
+//                        Message message = new Message();
+//                        message.what = 1;
+//                        message.obj = jsonObject;
+//                        handler.sendMessage(message);
                         }
                 };
-                timer.schedule(task,0,100);
+               // timer.schedule(task,0,1);
 
                 /**
                  * 保存数据
@@ -162,8 +160,28 @@ public class EchartsActivity extends TwtBaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             UiEchartsData uiEchartsData = intent.getParcelableExtra("ECHARTS_DATA");
-            echartsDataQueue.add(uiEchartsData);
-            List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
+//            echartsDataQueue.add(uiEchartsData);
+            JSONObject jsonObject = new JSONObject();
+             JSONArray dataArray = new JSONArray();
+             JSONArray timeArray = new JSONArray();
+//                 if (!echartsDataQueue.isEmpty()){
+//
+//                     UiEchartsData uiEchartsData1 = echartsDataQueue.poll();
+              List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
+              for (EchartsData echartsData : echartsDataList){
+                   dataArray.put(echartsData.getDataPoint());
+                   timeArray.put(echartsData.getTime());
+              }
+
+                 //}
+             try {
+                 jsonObject.put("data",dataArray);
+                 jsonObject.put("time",timeArray);
+             } catch (JSONException e) {
+                 e.printStackTrace();
+             }
+            webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
+           // List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
             for (EchartsData echartsData : echartsDataList){
                 //Log.d("EchartsDataReceiver", "onReceive: "+echartsData.getDataPoint());
                 dataList.add(echartsData.getDataPoint());
@@ -178,7 +196,7 @@ public class EchartsActivity extends TwtBaseActivity {
             super.handleMessage(msg);
             if (msg.what == 1){
                 JSONObject jsonObject =  (JSONObject) msg.obj;
-                Log.d("EchartsDataListThread", "run: "+jsonObject);
+                //Log.d("EchartsDataListThread", "run: "+jsonObject);
                 webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
             }
         }
