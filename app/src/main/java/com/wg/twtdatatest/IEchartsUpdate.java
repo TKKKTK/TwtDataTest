@@ -1,5 +1,7 @@
 package com.wg.twtdatatest;
 
+import com.wg.twtdatatest.Data.UiEchartsData;
+
 public interface IEchartsUpdate {
-    void DrawEcharts(int[] data);
+    void DrawEcharts(UiEchartsData data);
 }

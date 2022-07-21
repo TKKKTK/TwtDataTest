@@ -12,6 +12,7 @@ import com.wg.twtdatatest.Data.BleDevice;
 import com.wg.twtdatatest.Data.DataPacket;
 import com.wg.twtdatatest.Data.EchartsData;
 import com.wg.twtdatatest.Data.UiEchartsData;
+import com.wg.twtdatatest.IEchartsUpdate;
 import com.wg.twtdatatest.IreseviceDataListenner;
 import com.wg.twtdatatest.TwtManager;
 
@@ -22,6 +23,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,8 +44,14 @@ public class BackgroundService extends Service {
     private Queue<List<EchartsData>> dataQueue = new LinkedList<>();
     private List<EchartsData> catchList = new ArrayList<>();
     private int count = 0;
+    private IEchartsUpdate iEchartsUpdate;
 
     public class TwtBinder extends Binder{
+
+        public void setIEchaertsUpdate(IEchartsUpdate listenner){
+            iEchartsUpdate = listenner;
+        }
+
         /**
          * 蓝牙连接
          */
@@ -99,32 +107,33 @@ public class BackgroundService extends Service {
                    break;
                case ECHARTS_DATA:
                    //Log.d("reseviceDataListenner", "DataResevice: "+data);
+                   long start = System.currentTimeMillis()*1000;
                    int[] dataInts = subData(data.toString());
+                   //int[] dataInts = new int[5];
+                   //Random random = new Random();
                    for (int i = 0; i < dataInts.length; i++){
-                       count++;
-                       if (count<=10){
+                           //dataInts[i] = random.nextInt(10);
                            EchartsData echartsData = new EchartsData();
                            echartsData.setTime(getTimeRecord());
                            echartsData.setDataPoint(dataInts[i]);
                            catchList.add(echartsData);
-                       }else {
-                           //Log.d("reseviceDataListenner", "DataResevice: "+dataInts[i]);
-                           //发送给前台缓冲区数据包
-                           UiEchartsData uiEchartsData = new UiEchartsData();
-                           uiEchartsData.setListPacket(catchList);
-                           //发送给前台一条广播
-                           Intent Echartsintent = new Intent("com.wg.twtdatatest.ECHARTS_DATA");
-                           Echartsintent.putExtra("ECHARTS_DATA",uiEchartsData);
-                           sendBroadcast(Echartsintent);
-
-                           count = 0;
-                           catchList.clear();
-                           count++;
-                           EchartsData echartsData = new EchartsData();
-                           echartsData.setTime(getTimeRecord());
-                           echartsData.setDataPoint(dataInts[i]);
-                           catchList.add(echartsData);
-                       }
+                   }
+                   count++;
+                   if (count == 2){
+                       //Log.d("reseviceDataListenner", "DataResevice: "+dataInts[i]);
+                       //发送给前台缓冲区数据包
+                       UiEchartsData uiEchartsData = new UiEchartsData();
+                       uiEchartsData.setListPacket(catchList);
+                       //发送给前台一条广播
+//                       Intent Echartsintent = new Intent("com.wg.twtdatatest.ECHARTS_DATA");
+//                       Echartsintent.putExtra("ECHARTS_DATA",uiEchartsData);
+//                       sendBroadcast(Echartsintent);
+                       iEchartsUpdate.DrawEcharts(uiEchartsData);
+                       long end = System.currentTimeMillis()*1000;
+                       long time = end-start;
+                       Log.d("解码执行时间:", time +"ws");
+                       count = 0;
+                       catchList.clear();
                    }
 
                    break;

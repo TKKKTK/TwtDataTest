@@ -61,10 +61,10 @@ public class EchartsActivity extends TwtBaseActivity {
         }
 
         //创建数据接收广播,并注册
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.wg.twtdatatest.ECHARTS_DATA");
-        echartsDataReceiver = new EchartsDataReceiver();
-        registerReceiver(echartsDataReceiver,intentFilter);
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction("com.wg.twtdatatest.ECHARTS_DATA");
+//        echartsDataReceiver = new EchartsDataReceiver();
+//        registerReceiver(echartsDataReceiver,intentFilter);
 
         webView = (WebView) findViewById(R.id.lineChart);
         WebSettings webSettings = webView.getSettings();
@@ -86,7 +86,8 @@ public class EchartsActivity extends TwtBaseActivity {
         echarts_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
+                twtBinder.setIEchaertsUpdate(echartsDataListenner);
                 twtBinder.startReadData(BackgroundService.ECHARTS_DATA);
                 Timer timer = new Timer();
                 TimerTask task = new TimerTask() {
@@ -154,6 +155,43 @@ public class EchartsActivity extends TwtBaseActivity {
 
     }
 
+
+    class EchartsDataListenner implements IEchartsUpdate{
+
+        @Override
+        public void DrawEcharts(UiEchartsData data) {
+            UiEchartsData uiEchartsData = data;
+            //            echartsDataQueue.add(uiEchartsData);
+            JSONObject jsonObject = new JSONObject();
+            JSONArray dataArray = new JSONArray();
+            JSONArray timeArray = new JSONArray();
+//                 if (!echartsDataQueue.isEmpty()){
+//
+//                     UiEchartsData uiEchartsData1 = echartsDataQueue.poll();
+            List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
+            for (EchartsData echartsData : echartsDataList){
+                dataArray.put(echartsData.getDataPoint());
+                timeArray.put(echartsData.getTime());
+            }
+
+            //}
+            try {
+                jsonObject.put("data",dataArray);
+                jsonObject.put("time",timeArray);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
+            // List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
+            for (EchartsData echartsData : echartsDataList){
+                //Log.d("EchartsDataReceiver", "onReceive: "+echartsData.getDataPoint());
+                dataList.add(echartsData.getDataPoint());
+            }
+        }
+    }
+
+
+
     //数据接收广播
     class EchartsDataReceiver extends BroadcastReceiver{
 
@@ -205,12 +243,12 @@ public class EchartsActivity extends TwtBaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(echartsDataReceiver);
+        //unregisterReceiver(echartsDataReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(echartsDataReceiver);
+        //unregisterReceiver(echartsDataReceiver);
     }
 }
