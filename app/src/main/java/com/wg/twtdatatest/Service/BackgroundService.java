@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.data.Data;
@@ -97,6 +98,7 @@ public class BackgroundService extends Service {
 
          @Override
          public void DataResevice(Data data) {
+             Log.d("reseviceDataListenner", "DataResevice: "+data);
            switch (STATE){
                case LIST_DATA:
                    DataPacket dataPacket = new DataPacket(data,getTimeRecord());
@@ -234,7 +236,7 @@ public class BackgroundService extends Service {
         return twtBinder;
     }
 
-    public String getTimeRecord(){
-        return new SimpleDateFormat("HH:mm:ss:SS").format(new Date());
+    public long getTimeRecord(){
+        return TimeUnit.MILLISECONDS.toMillis(System.currentTimeMillis());
     }
 }

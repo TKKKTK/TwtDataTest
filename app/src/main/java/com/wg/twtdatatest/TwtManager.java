@@ -1,11 +1,14 @@
 package com.wg.twtdatatest;
 
+import static android.content.ContentValues.TAG;
+
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -55,7 +58,7 @@ public class TwtManager extends ObservableBleManager {
         @Override
         public void onDataReceived(@NonNull BluetoothDevice device, @NonNull Data data) {
             super.onDataReceived(device, data);
-//            Log.d(TAG, "onDataReceived: "+data);
+         Log.d(TAG, "onDataReceived: "+data);
             ireseviceDataListenner.DataResevice(data);
         }
 

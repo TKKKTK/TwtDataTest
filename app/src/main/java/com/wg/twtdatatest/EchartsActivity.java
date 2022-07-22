@@ -19,10 +19,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 
+import com.github.mikephil.charting.charts.LineChart;
 import com.wg.twtdatatest.Data.EchartsData;
 import com.wg.twtdatatest.Data.UiEchartsData;
 import com.wg.twtdatatest.Service.BackgroundService;
 import com.wg.twtdatatest.util.FileDownload;
+import com.wg.twtdatatest.util.LineChartUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,6 +51,8 @@ public class EchartsActivity extends TwtBaseActivity {
     private List dataList = new ArrayList();
     private EchartsDataReceiver echartsDataReceiver;
     private Queue<UiEchartsData> echartsDataQueue = new LinkedList<>();
+    public LineChart lineChart;
+    private LineChartUtil lineChartUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +63,8 @@ public class EchartsActivity extends TwtBaseActivity {
             actionBar.hide();
             actionBar.setDisplayShowCustomEnabled(true);
         }
+        lineChart = findViewById(R.id.Chart);
+        lineChartUtil = new LineChartUtil(lineChart);
 
         //创建数据接收广播,并注册
 //        IntentFilter intentFilter = new IntentFilter();
@@ -66,19 +72,20 @@ public class EchartsActivity extends TwtBaseActivity {
 //        echartsDataReceiver = new EchartsDataReceiver();
 //        registerReceiver(echartsDataReceiver,intentFilter);
 
-        webView = (WebView) findViewById(R.id.lineChart);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+//        webView = (WebView) findViewById(R.id.lineChart);
+//        WebSettings webSettings = webView.getSettings();
+//        webSettings.setJavaScriptEnabled(true);
 
 //        webView.setOnTouchListener((v,event)->(event.getAction() == MotionEvent.ACTION_MOVE));
-        webView.loadUrl("file:///android_asset/index.html");
-        webView.setWebViewClient(new WebViewClient(){
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-//                webView.loadUrl("javascript:test()");
-            }
-        });
+//        webView.loadUrl("file:///android_asset/index.html");
+//        webView.setWebViewClient(new WebViewClient(){
+//            @Override
+//            public void onPageFinished(WebView view, String url) {
+//                super.onPageFinished(view, url);
+////                webView.loadUrl("javascript:test()");
+//            }
+//        });
+
 
         //设置数据回调监听
         //twtManager.setIreseviceDataListenner(EchartsActivity.this);
@@ -161,27 +168,28 @@ public class EchartsActivity extends TwtBaseActivity {
         @Override
         public void DrawEcharts(UiEchartsData data) {
             UiEchartsData uiEchartsData = data;
+            lineChartUtil.UpdateData(uiEchartsData);
             //            echartsDataQueue.add(uiEchartsData);
-            JSONObject jsonObject = new JSONObject();
-            JSONArray dataArray = new JSONArray();
-            JSONArray timeArray = new JSONArray();
+//            JSONObject jsonObject = new JSONObject();
+//            JSONArray dataArray = new JSONArray();
+//            JSONArray timeArray = new JSONArray();
 //                 if (!echartsDataQueue.isEmpty()){
 //
 //                     UiEchartsData uiEchartsData1 = echartsDataQueue.poll();
             List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
-            for (EchartsData echartsData : echartsDataList){
-                dataArray.put(echartsData.getDataPoint());
-                timeArray.put(echartsData.getTime());
-            }
-
-            //}
-            try {
-                jsonObject.put("data",dataArray);
-                jsonObject.put("time",timeArray);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
+//            for (EchartsData echartsData : echartsDataList){
+//                dataArray.put(echartsData.getDataPoint());
+//                timeArray.put(echartsData.getTime());
+//            }
+//
+//            //}
+//            try {
+//                jsonObject.put("data",dataArray);
+//                jsonObject.put("time",timeArray);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            webView.evaluateJavascript("update("+ jsonObject.toString() +")",null);
             // List<EchartsData> echartsDataList = uiEchartsData.getListPacket();
             for (EchartsData echartsData : echartsDataList){
                 //Log.d("EchartsDataReceiver", "onReceive: "+echartsData.getDataPoint());

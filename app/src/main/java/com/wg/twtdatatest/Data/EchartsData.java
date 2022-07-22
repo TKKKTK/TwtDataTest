@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 public class EchartsData implements Parcelable {
     private int dataPoint;
-    private String time;
+    private long time;
 
     public EchartsData(){
 
@@ -14,7 +14,7 @@ public class EchartsData implements Parcelable {
     //反序列化
     protected EchartsData(Parcel in) {
         dataPoint = in.readInt();
-        time = in.readString();
+        time = in.readLong();
     }
 
     public static final Creator<EchartsData> CREATOR = new Creator<EchartsData>() {
@@ -37,11 +37,11 @@ public class EchartsData implements Parcelable {
         this.dataPoint = dataPoint;
     }
 
-    public String getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -54,6 +54,6 @@ public class EchartsData implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(dataPoint);
-        parcel.writeString(time);
+        parcel.writeLong(time);
     }
 }

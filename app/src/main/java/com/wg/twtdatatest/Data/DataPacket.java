@@ -11,9 +11,9 @@ import no.nordicsemi.android.ble.data.Data;
 public class DataPacket implements Parcelable {
     private Data data;
     private boolean isSelect;
-    private String timeRecord;
+    private long timeRecord;
 
-    public DataPacket(Data data, String timeRecord) {
+    public DataPacket(Data data, long timeRecord) {
         this.data = data;
         this.timeRecord = timeRecord;
         this.isSelect = false;
@@ -22,7 +22,7 @@ public class DataPacket implements Parcelable {
     protected DataPacket(Parcel in) {
         data = in.readParcelable(Data.class.getClassLoader());
         isSelect = in.readByte() != 0;
-        timeRecord = in.readString();
+        timeRecord = in.readLong();
     }
 
     public static final Creator<DataPacket> CREATOR = new Creator<DataPacket>() {
@@ -53,11 +53,11 @@ public class DataPacket implements Parcelable {
         isSelect = select;
     }
 
-    public String getTimeRecord() {
+    public long getTimeRecord() {
         return timeRecord;
     }
 
-    public void setTimeRecord(String timeRecord) {
+    public void setTimeRecord(long timeRecord) {
         this.timeRecord = timeRecord;
     }
 
@@ -71,6 +71,6 @@ public class DataPacket implements Parcelable {
 
         parcel.writeParcelable(data, i);
         parcel.writeByte((byte) (isSelect ? 1 : 0));
-        parcel.writeString(timeRecord);
+        parcel.writeLong(timeRecord);
     }
 }

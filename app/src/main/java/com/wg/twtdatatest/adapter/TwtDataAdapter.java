@@ -35,7 +35,7 @@ public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             DataPacket dataPacket = dataList.get(position);
             holder.dataText.setText(dataPacket.getData().toString());
-            holder.timeRecord.setText(dataPacket.getTimeRecord());
+            //holder.timeRecord.setText(dataPacket.getTimeRecord());
 
     }
 
