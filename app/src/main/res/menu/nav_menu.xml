@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/start"
+            android:title="开始" />
+        <item
+            android:id="@+id/stop"
+            android:title="暂停"/>
+        <item
+            android:id="@+id/Import"
+            android:title="导入文件"/>
+        <item
+            android:id="@+id/save"
+            android:title="导出文件"/>
+    </group>
+</menu>

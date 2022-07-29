@@ -1,5 +1,7 @@
 package com.wg.twtdatatest.util;
 
+import static android.content.ContentValues.TAG;
+
 import android.graphics.Color;
 import android.util.Log;
 
@@ -10,6 +12,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.wg.twtdatatest.Data.EchartsData;
 import com.wg.twtdatatest.Data.UiEchartsData;
@@ -21,11 +24,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class LineChartUtil {
     private LineChart lineChart;
-    private List<Entry> list = new ArrayList<>();
+    private List<Entry> dataList = new ArrayList<>();
+    private List<String> XLabel = new ArrayList<>();
+    private LineData lineData;
+    private LineDataSet lineDataSet;
     private int count = 0;
 
     public LineChartUtil(LineChart lineChart) {
@@ -33,7 +40,7 @@ public class LineChartUtil {
         Setting();
         SetXAxis();
         SetYAxis();
-        InitData();
+        initLineDataSet("方波图",Color.BLUE);
     }
 
     /**
@@ -54,6 +61,9 @@ public class LineChartUtil {
         //显示边界
         lineChart.setDrawBorders(true);
         lineChart.setBorderColor(Color.parseColor("#d5d5d5"));
+        lineChart.getAxisRight().setEnabled(false);//关闭右侧Y轴
+        lineChart.setTouchEnabled(false);
+
 
         //折线图例 标签 设置 这里不显示图例
         Legend legend = lineChart.getLegend();
@@ -63,17 +73,18 @@ public class LineChartUtil {
     private void SetXAxis(){
         //绘制X轴
         XAxis xAxis = lineChart.getXAxis();
-//        xAxis.setAxisMaximum(1000);
-//        xAxis.setAxisMinimum(0);
+        xAxis.setAxisMaximum(1000);
+        xAxis.setAxisMinimum(0);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(true);
         xAxis.setGridColor(Color.parseColor("#d8d8d8"));
         //设置最后和第一个标签不超出x轴
-        xAxis.setAvoidFirstLastClipping(true);
+        //xAxis.setAvoidFirstLastClipping(true);
 //        设置线的宽度
         xAxis.setAxisLineWidth(1.0f);
         xAxis.setAxisLineColor(Color.parseColor("#d5d5d5"));
-        xAxis.setLabelCount(6,true);
+        xAxis.setLabelCount(5,true);
+        xAxis.setDrawLabels(true);
 //        xAxis.setValueFormatter(new ValueFormatter() {
 //            private final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SS", Locale.ENGLISH);
 //            @Override
@@ -87,46 +98,101 @@ public class LineChartUtil {
     private void SetYAxis(){
         //绘制Y轴
         YAxis yAxis = lineChart.getAxisLeft();
-        yAxis.setAxisMaximum(30000);
-        yAxis.setAxisMinimum(-30000);
-        YAxis rightAxis = lineChart.getAxisRight();
-        rightAxis.setEnabled(false);
+//        yAxis.setAxisMaximum(30000);
+//        yAxis.setAxisMinimum(-30000);
     }
 
-    private void InitData(){
-        for (int i = 0;i < 1000;i++ ){
-            Entry entry = new Entry(count++,0);
-            list.add(entry);
+    /**
+     * 初始化一条折线
+     */
+    private void initLineDataSet(String name, int color) {
+
+        for (int i = 0;i<1000;i++){
+            Entry entry = new Entry(i,0);
+            dataList.add(entry);
+            XLabel.add(new SimpleDateFormat("HH:mm:ss:SS").format(new Date().getTime()));
         }
 
-        LineDataSet dataSet = new LineDataSet(list,"linechart");
-        dataSet.setLineWidth(1.5f);
-        dataSet.setDrawCircles(false);
-        dataSet.setDrawValues(false);
-        dataSet.setColor(Color.BLUE);
-        LineData lineData = new LineData(dataSet);
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(XLabel));
+
+        lineDataSet = new LineDataSet(dataList, name);
+        lineDataSet.setLineWidth(1.5f);
+        lineDataSet.setDrawCircles(false);
+        lineDataSet.setDrawValues(false);
+        lineDataSet.setColor(Color.BLUE);
+        //添加一个空的 LineData
+        lineData = new LineData(lineDataSet);
         lineChart.setData(lineData);
+
+//        LineChartMarkView mv = new LineChartMarkView(context, xAxis.getValueFormatter());
+//        mv.setChartView(lineChart);
+//        lineChart.setMarker(mv);
+        lineChart.invalidate();
+
     }
-
-
 
     public void UpdateData(UiEchartsData uiEchartsData){
-        UiEchartsData data = uiEchartsData;
+        List<EchartsData> datas = uiEchartsData.getListPacket();
 
-        List<EchartsData> dataList = data.getListPacket();
-        for (EchartsData echartsData : dataList){
-            Log.d("LineChartUtil", "UpdateData: "+echartsData.getDataPoint());
-            Entry entry = new Entry(count++,echartsData.getDataPoint());
-            list.remove(0);
-            list.add(entry);
+        for (int i = 0; i<datas.size();i++){
+            dataList.remove(0);
+            XLabel.remove(0);
         }
-        LineDataSet dataSet = new LineDataSet(list,"linechart");
-        dataSet.setLineWidth(1.5f);
-        dataSet.setDrawCircles(false);
-        dataSet.setDrawValues(false);
-        dataSet.setColor(Color.BLUE);
-        LineData lineData = new LineData(dataSet);
-        lineChart.setData(lineData);
+        for (int i = 0;i<dataList.size();i++){
+            Entry entry = dataList.get(i);
+            dataList.set(i,new Entry(i,entry.getY()));
+        }
+        for (int i = 0; i<datas.size();i++){
+            Entry entry;
+//            count++;
+//            if (count % 250 == 0){
+//                entry = new Entry(dataList.size(),0);
+//            }else{
+                entry = new Entry(dataList.size(),datas.get(i).getDataPoint());
+//            }
+            dataList.add(entry);
+            //更新x轴标签的数据
+            XLabel.add(datas.get(i).getTime());
+        }
 
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(XLabel));
+        //Log.d(TAG, "UpdateData: "+lineData.getDataSetCount());
+        lineDataSet.setValues(dataList);
+        lineData = new LineData(lineDataSet);
+        lineChart.setData(lineData);
+        lineChart.notifyDataSetChanged();
+        lineChart.invalidate();
     }
+
+    public void UpdateData(List<Integer> datas){
+        for (int i = 0; i<datas.size();i++){
+            dataList.remove(0);
+            XLabel.remove(0);
+        }
+        for (int i = 0;i<dataList.size();i++){
+            Entry entry = dataList.get(i);
+            dataList.set(i,new Entry(i,entry.getY()));
+        }
+        for (int i = 0; i<datas.size();i++){
+            Entry entry = new Entry(dataList.size(),datas.get(i));
+            dataList.add(entry);
+            //更新x轴标签的数据
+            XLabel.add(new SimpleDateFormat("HH:mm:ss:SS").format(new Date().getTime()));
+        }
+
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(XLabel));
+
+        lineDataSet.setValues(dataList);
+        lineData = new LineData(lineDataSet);
+        lineChart.setData(lineData);
+        //lineChart.moveViewTo(lineData.getEntryCount() - 10,50f, YAxis.AxisDependency.LEFT);
+        lineChart.notifyDataSetChanged();
+
+        lineChart.invalidate();
+    }
+
+
 }

@@ -14,6 +14,9 @@ import com.wg.twtdatatest.R;
 
 import java.util.List;
 
+/**
+ * 十六进制数据接收列表适配器
+ */
 public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHolder> {
 
     private List<DataPacket> dataList;
@@ -35,7 +38,7 @@ public class TwtDataAdapter extends RecyclerView.Adapter<TwtDataAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             DataPacket dataPacket = dataList.get(position);
             holder.dataText.setText(dataPacket.getData().toString());
-            //holder.timeRecord.setText(dataPacket.getTimeRecord());
+            holder.timeRecord.setText(dataPacket.getTimeRecord());
 
     }
 

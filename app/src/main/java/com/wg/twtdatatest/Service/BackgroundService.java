@@ -108,35 +108,22 @@ public class BackgroundService extends Service {
                    sendBroadcast(intent);
                    break;
                case ECHARTS_DATA:
-                   //Log.d("reseviceDataListenner", "DataResevice: "+data);
-                   long start = System.currentTimeMillis()*1000;
                    int[] dataInts = subData(data.toString());
-                   //int[] dataInts = new int[5];
-                   //Random random = new Random();
                    for (int i = 0; i < dataInts.length; i++){
-                           //dataInts[i] = random.nextInt(10);
                            EchartsData echartsData = new EchartsData();
                            echartsData.setTime(getTimeRecord());
                            echartsData.setDataPoint(dataInts[i]);
                            catchList.add(echartsData);
                    }
-                   count++;
-                   if (count == 2){
-                       //Log.d("reseviceDataListenner", "DataResevice: "+dataInts[i]);
+//                   count++;
+//                   if (count == 1){
                        //发送给前台缓冲区数据包
                        UiEchartsData uiEchartsData = new UiEchartsData();
                        uiEchartsData.setListPacket(catchList);
-                       //发送给前台一条广播
-//                       Intent Echartsintent = new Intent("com.wg.twtdatatest.ECHARTS_DATA");
-//                       Echartsintent.putExtra("ECHARTS_DATA",uiEchartsData);
-//                       sendBroadcast(Echartsintent);
                        iEchartsUpdate.DrawEcharts(uiEchartsData);
-                       long end = System.currentTimeMillis()*1000;
-                       long time = end-start;
-                       Log.d("解码执行时间:", time +"ws");
-                       count = 0;
+//                       count = 0;
                        catchList.clear();
-                   }
+//                   }
 
                    break;
            }
@@ -236,7 +223,7 @@ public class BackgroundService extends Service {
         return twtBinder;
     }
 
-    public long getTimeRecord(){
-        return TimeUnit.MILLISECONDS.toMillis(System.currentTimeMillis());
+    public String getTimeRecord(){
+        return new SimpleDateFormat("HH:mm:ss:SS").format(new Date().getTime());
     }
 }

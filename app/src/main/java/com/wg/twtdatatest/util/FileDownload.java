@@ -44,6 +44,11 @@ public class FileDownload {
         this.echartsData = echartsData;
     }
 
+    public FileDownload(Context context,List echartsData){
+        this.context = context;
+        this.echartsData = echartsData;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public String save(){
         String content = listToString(); // 存储内容解析
@@ -139,6 +144,46 @@ public class FileDownload {
             String filePath = "/sdcard/";
             //传统File方式
             File file = new File(filePath+file_name);
+            OutputStream outputStream = null;
+            if (!file.exists()){
+                try {
+                    file.createNewFile();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                outputStream = new FileOutputStream(file);
+                outputStream.write(content.getBytes());
+                outputStream.close();
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void saveToUri(Uri uri){
+        String content = echartsListString(); // 存储内容解析
+        //判断当前android 版本是否支持分区存储
+        if (!Environment.isExternalStorageLegacy()){
+            OutputStream outputStream = null;
+            try {
+                outputStream = context.getContentResolver().openOutputStream(uri);
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(content.getBytes());
+                bos.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else{
+            //String filePath = "/sdcard/";
+            //传统File方式
+            File file = new File(uri.getPath());
             OutputStream outputStream = null;
             if (!file.exists()){
                 try {
