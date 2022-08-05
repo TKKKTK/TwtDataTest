@@ -9,9 +9,12 @@
             android:title="暂停"/>
         <item
             android:id="@+id/Import"
-            android:title="导入文件"/>
+            android:title="导入txt文件"/>
         <item
-            android:id="@+id/save"
-            android:title="导出文件"/>
+            android:id="@+id/start_save"
+            android:title="开始存储"/>
+        <item
+            android:id="@+id/stop_save"
+            android:title="停止存储"/>
     </group>
 </menu>

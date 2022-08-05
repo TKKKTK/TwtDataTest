@@ -165,7 +165,10 @@ public class FileDownload {
         }
     }
 
-
+    /**
+     * 根据对应的uri来进行存储
+     * @param uri
+     */
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public void saveToUri(Uri uri){
         String content = echartsListString(); // 存储内容解析

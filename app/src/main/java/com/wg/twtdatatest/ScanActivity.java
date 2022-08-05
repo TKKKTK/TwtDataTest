@@ -43,6 +43,7 @@ public class ScanActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         requestPermission();
+        checkNeedPermissions();
         openBluetooth();
         initView();
         startScan();
@@ -100,6 +101,22 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
+    private boolean checkNeedPermissions(){
+        boolean isPermit = false;
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            //多个权限一起申请
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }, 1);
+            isPermit = true;
+        }
+        return isPermit;
+    }
+
 
     @Override
     protected void onStart() {
@@ -136,7 +153,7 @@ public class ScanActivity extends AppCompatActivity {
             super.onBatchScanResults(results);
             for (ScanResult result : results){
                 BleDevice bleDevice = new BleDevice(result);
-                if (indexOf(bleDevice) == -1){
+                if (indexOf(bleDevice) == -1 && bleDevice.getName() != null){
                     listAdpter.add(bleDevice);
                 }
             }
