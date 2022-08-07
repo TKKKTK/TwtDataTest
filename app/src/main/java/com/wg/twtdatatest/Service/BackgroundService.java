@@ -1,5 +1,7 @@
 package com.wg.twtdatatest.Service;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.DownloadManager;
 import android.app.Service;
 import android.content.Intent;
@@ -7,6 +9,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.wg.twtdatatest.Data.BleDevice;
 import com.wg.twtdatatest.Data.DataPacket;
@@ -98,7 +101,7 @@ public class BackgroundService extends Service {
 
          @Override
          public void DataResevice(Data data) {
-             Log.d("reseviceDataListenner", "DataResevice: "+data);
+             //Log.d("reseviceDataListenner", "DataResevice: "+data);
            switch (STATE){
                case LIST_DATA:
                    DataPacket dataPacket = new DataPacket(data,getTimeRecord());
@@ -110,21 +113,16 @@ public class BackgroundService extends Service {
                case ECHARTS_DATA:
                    int[] dataInts = subData(data.toString());
                    for (int i = 0; i < dataInts.length; i++){
-                           EchartsData echartsData = new EchartsData();
-                           echartsData.setTime(getTimeRecord());
-                           echartsData.setDataPoint(dataInts[i]);
-                           catchList.add(echartsData);
+                        EchartsData echartsData = new EchartsData();
+                        echartsData.setTime(getTimeRecord());
+                        echartsData.setDataPoint(dataInts[i]);
+                        catchList.add(echartsData);
                    }
-//                   count++;
-//                   if (count == 1){
                        //发送给前台缓冲区数据包
                        UiEchartsData uiEchartsData = new UiEchartsData();
                        uiEchartsData.setListPacket(catchList);
                        iEchartsUpdate.DrawEcharts(uiEchartsData);
-//                       count = 0;
                        catchList.clear();
-//                   }
-
                    break;
            }
 
@@ -139,9 +137,12 @@ public class BackgroundService extends Service {
         String[] arr1 = hexString.split(" ");
         String[] arr = arr1[1].split("-");
         //Log.d("字符串转数组后的数据：", "subData: "+ Arrays.toString(arr));
-        int[] dataArr = new int[arr.length];
-        int[] subData = new int[15];
-        int[][] echartsData = new int[5][3];
+        int[] dataArr = new int[arr.length];//记录原始数据
+        int[] subData = new int[15]; //存放截取的数据
+        int[][] echartsData = new int[5][3]; //存放反转后的数据
+        int fallOff = 0; //脱落位
+        int verify = 0; //校验位
+
         /**
          * 16进制字符串转整型
          */
@@ -149,6 +150,16 @@ public class BackgroundService extends Service {
 
             dataArr[i] = Integer.valueOf(arr[i],16);
         }
+        fallOff = dataArr[17];
+        verify = dataArr[18];
+        Log.d(TAG, "脱落位: "+dataArr[17]);
+        Log.d(TAG, "校验位: "+dataArr[18]);
+        if (fallOff == 1){
+              iEchartsUpdate.ShowMessage("设备脱落");
+        }else {
+           // iEchartsUpdate.ShowMessage("设备未脱落");
+        }
+
         //Log.d("十六进制转整型后的数据", "subData: "+Arrays.toString(dataArr));
         System.arraycopy(dataArr,2,subData,0,15);
         for (int i = 0; i < echartsData.length;i++){
@@ -210,6 +221,11 @@ public class BackgroundService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    /**
+     * 在服务绑定时调用
+     * @param intent
+     * @return
+     */
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.

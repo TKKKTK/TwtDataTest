@@ -3,7 +3,7 @@
     <style name="Theme.TwtDataTest" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#4EE0FA</item>
-        <item name="colorPrimaryVariant">#7EF4F8</item>
+        <item name="colorPrimaryVariant">#4EE0FA</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>

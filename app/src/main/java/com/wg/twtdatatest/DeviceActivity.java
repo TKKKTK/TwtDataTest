@@ -1,5 +1,7 @@
 package com.wg.twtdatatest;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -55,7 +57,7 @@ public class DeviceActivity extends TwtBaseActivity{
     private int count;
     private FloatingActionButton download;
     private FloatingActionButton echarts;
-    private DataListReceiver dataListReceiver;
+    private DataListReceiver dataListReceiver; //接收后台服务的广播
 
 
     @Override
@@ -176,16 +178,57 @@ public class DeviceActivity extends TwtBaseActivity{
         public void onReceive(Context context, Intent intent) {
             //Toast.makeText(DeviceActivity.this,"数据接收",Toast.LENGTH_LONG).show();
             DataPacket dataPacket = intent.getParcelableExtra("LIST_DATA");
+            //脱落检测
+            DataSolation(dataPacket.getData().toString());
             dataList.add(dataPacket);
             count++;
-            Log.d("DeviceActivity", "onReceive: "+dataPacket.getData());
+            //Log.d("DeviceActivity", "onReceive: "+dataPacket.getData());
         }
     }
+
+    /**
+     *数据解析及脱落判断
+     */
+    private void DataSolation(String hexString){
+        String[] arr1 = hexString.split(" ");
+        String[] arr = arr1[1].split("-");
+        //Log.d("字符串转数组后的数据：", "subData: "+ Arrays.toString(arr));
+        int[] dataArr = new int[arr.length];//记录原始数据
+        int fallOff = 0; //脱落位
+        int verify = 0; //校验位
+
+        /**
+         * 16进制字符串转整型
+         */
+        for (int i = 0;i < arr.length;i++){
+
+            dataArr[i] = Integer.valueOf(arr[i],16);
+        }
+        fallOff = dataArr[17];
+        verify = dataArr[18];
+        Log.d(TAG, "脱落位: "+dataArr[17]);
+        Log.d(TAG, "校验位: "+dataArr[18]);
+
+        if (fallOff == 1){
+            Toast.makeText(DeviceActivity.this,"设备脱落",Toast.LENGTH_LONG).show();
+        }else {
+            //Toast.makeText(DeviceActivity.this,"设备未脱落",Toast.LENGTH_LONG).show();
+        }
+
+    }
+
 
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(dataListReceiver);
+        //unregisterReceiver(dataListReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        twtBinder.disconnect(); //断开蓝牙连接
+        unbindService(connection); //解绑服务
     }
 
     class DataListThread extends Thread{

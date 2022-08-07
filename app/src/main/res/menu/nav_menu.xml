@@ -16,5 +16,8 @@
         <item
             android:id="@+id/stop_save"
             android:title="停止存储"/>
+        <item
+            android:id="@+id/back"
+            android:title="返回"/>
     </group>
 </menu>

@@ -75,7 +75,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import no.nordicsemi.android.ble.data.Data;
 
-public class EchartsActivity extends TwtBaseActivity {
+public class EchartsActivity extends TwtBaseActivity{
 
     public LineChart lineChart;
     private LineChartUtil lineChartUtil;
@@ -85,13 +85,10 @@ public class EchartsActivity extends TwtBaseActivity {
     private DrawerLayout drawerLayout; //侧滑菜单栏
     private Button open_Menu;
     private Queue<Integer> dataQueue = new LinkedList<>(); //存储导入txt的数据
-    private Boolean isRead = false; //记录是否正在读取
+    private Boolean isRead = false; //记录是否正在读取 是用于导入txt用的
     private Boolean isSave = false;//记录是否正在保存
     private Queue<UiEchartsData> catchData = new LinkedList<>(); //暂存需要存入EDF中的数据
     private String cache_filename; //存放缓存时的文件名
-    private int count = 0; // 记录存储的包数
-    private long startTime; //记录开始保存的时间
-    private long stopTime; //记录结束保存的时间
     private Queue<int[]> edfDataQueue = new LinkedList<>(); //存放解析后将要存入edf中的数据
     private int[] buf;
 
@@ -99,8 +96,8 @@ public class EchartsActivity extends TwtBaseActivity {
      * 数据渲染的类型
      */
     private enum ReciveType{
-        Import,
-        DeviceData,
+        Import, //所要导入的txt文件
+        DeviceData, //实时设备数据渲染
     }
 
     private ReciveType state = ReciveType.DeviceData;
@@ -125,26 +122,6 @@ public class EchartsActivity extends TwtBaseActivity {
                 drawerLayout.openDrawer(GravityCompat.END);
             }
         });
-
-//        EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
-//        twtBinder.setIEchaertsUpdate(echartsDataListenner);
-//       测试用
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                super.run();
-//                while (true){
-//                    try {
-//                        Thread.sleep(262);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    send();
-//                }
-//
-//            }
-//        }.start();
-//        send();
 
         navigationView = (NavigationView)findViewById(R.id.nav_vew);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -199,6 +176,9 @@ public class EchartsActivity extends TwtBaseActivity {
                         //关闭侧滑菜单
                         drawerLayout.closeDrawer(GravityCompat.END);
                         break;
+                    case R.id.back:
+                        finish();
+                        break;
                 }
                 return false;
             }
@@ -211,7 +191,6 @@ public class EchartsActivity extends TwtBaseActivity {
      */
      private void StartSave(){
            isSave = true;
-           startTime = System.currentTimeMillis();
            cache_filename = getTimeRecord()+".txt";
      }
 
@@ -237,10 +216,10 @@ public class EchartsActivity extends TwtBaseActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void StopSave(){
         isSave = false;
-        stopTime = System.currentTimeMillis();
         dataCache(); // 将剩余的数据进行缓存
         readCacheData(); //读取缓冲区数据
         WriteEdf(); //导出为EDF文件
+        deleteFile(cache_filename);//删除缓冲区文件
     }
 
     /**
@@ -248,20 +227,30 @@ public class EchartsActivity extends TwtBaseActivity {
      */
     class EchartsDataListenner implements IEchartsUpdate{
 
+        /**
+         * 数据接收回调
+         * @param data
+         */
         @Override
         public void DrawEcharts(UiEchartsData data) {
             UiEchartsData uiEchartsData = data;
             lineChartUtil.UpdateData(uiEchartsData);
             if (isSave){
                 catchData.add(uiEchartsData);
-                count++;
-                if (count == 200){
-                    dataCache();
-                    count = 0;
-                }
+                dataCache();
             }
 
         }
+
+        /**
+         * 界面消息提示
+         * @param msg
+         */
+        @Override
+        public void ShowMessage(String msg) {
+            Toast.makeText(EchartsActivity.this,msg,Toast.LENGTH_LONG).show();
+        }
+
     }
 
     /**
@@ -296,7 +285,7 @@ public class EchartsActivity extends TwtBaseActivity {
         EDFwriter hdl;
         try
         {
-            hdl = new EDFwriter("xyz.edf", EDFwriter.EDFLIB_FILETYPE_BDFPLUS, edfsignals,EchartsActivity.this);
+            hdl = new EDFwriter(getTimeRecord()+".edf", EDFwriter.EDFLIB_FILETYPE_BDFPLUS, edfsignals,EchartsActivity.this);
         }
         catch(IOException e)
         {
@@ -532,7 +521,7 @@ public class EchartsActivity extends TwtBaseActivity {
         }
     }
     public String getTimeRecord(){
-        return new SimpleDateFormat("HH:mm:ss:SS").format(new Date().getTime());
+        return new SimpleDateFormat("HH_mm_ss_SS").format(new Date().getTime());
     }
 
     @Override

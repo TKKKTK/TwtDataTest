@@ -75,8 +75,7 @@ public class TwtBaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        twtBinder.disconnect();
-        unbindService(connection);
+
     }
 
 }

@@ -4,11 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ScanActivity">
+    tools:context=".ScanActivity"
+    android:orientation="vertical">
 
-   <ListView
-       android:id="@+id/list_view"
+   <ProgressBar
+       android:id="@+id/state_scanning"
+       style="?android:attr/progressBarStyleHorizontal"
        android:layout_width="match_parent"
-       android:layout_height="match_parent" />
+       android:layout_height="20dp"
+       android:layout_marginTop="-8dp"
+       android:layout_marginBottom="-7dp"
+       android:indeterminate="true"
+       android:visibility="invisible"/>
+
+   <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+       android:id="@+id/refresh_layout"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+      <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/device_list"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          tools:listitem="@layout/list_item" />
+
+   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>
