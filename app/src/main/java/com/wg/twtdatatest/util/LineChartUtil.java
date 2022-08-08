@@ -41,6 +41,7 @@ public class LineChartUtil {
         SetXAxis();
         SetYAxis();
         initLineDataSet("方波图",Color.BLUE);
+
     }
 
     /**
@@ -135,6 +136,9 @@ public class LineChartUtil {
     public void UpdateData(UiEchartsData uiEchartsData){
         List<EchartsData> datas = uiEchartsData.getListPacket();
 
+        /**
+         * 移除x轴、Y轴前面的数据
+         */
         for (int i = 0; i<datas.size();i++){
             dataList.remove(0);
             XLabel.remove(0);
@@ -167,14 +171,23 @@ public class LineChartUtil {
     }
 
     public void UpdateData(List<Integer> datas){
+        /**
+         * 移出前面的数据
+         */
         for (int i = 0; i<datas.size();i++){
             dataList.remove(0);
             XLabel.remove(0);
         }
+        /**
+         * 添加Y轴数据
+         */
         for (int i = 0;i<dataList.size();i++){
             Entry entry = dataList.get(i);
             dataList.set(i,new Entry(i,entry.getY()));
         }
+        /**
+         * 添加X轴数据
+         */
         for (int i = 0; i<datas.size();i++){
             Entry entry = new Entry(dataList.size(),datas.get(i));
             dataList.add(entry);

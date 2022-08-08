@@ -2,14 +2,11 @@ package com.wg.twtdatatest.Service;
 
 import static android.content.ContentValues.TAG;
 
-import android.app.DownloadManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.wg.twtdatatest.Data.BleDevice;
 import com.wg.twtdatatest.Data.DataPacket;
@@ -21,16 +18,11 @@ import com.wg.twtdatatest.TwtManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Stack;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.data.Data;
@@ -116,7 +108,10 @@ public class BackgroundService extends Service {
                         EchartsData echartsData = new EchartsData();
                         echartsData.setTime(getTimeRecord());
                         echartsData.setDataPoint(dataInts[i]);
+                        //此处对对象做记录
+                        echartsData.setRecord(false);
                         catchList.add(echartsData);
+
                    }
                        //发送给前台缓冲区数据包
                        UiEchartsData uiEchartsData = new UiEchartsData();
@@ -152,8 +147,6 @@ public class BackgroundService extends Service {
         }
         fallOff = dataArr[17];
         verify = dataArr[18];
-        Log.d(TAG, "脱落位: "+dataArr[17]);
-        Log.d(TAG, "校验位: "+dataArr[18]);
         if (fallOff == 1){
               iEchartsUpdate.ShowMessage("设备脱落");
         }else {

@@ -75,7 +75,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import no.nordicsemi.android.ble.data.Data;
 
-public class EchartsActivity extends TwtBaseActivity{
+public class EchartsActivity extends TwtBaseActivity implements View.OnClickListener{
 
     public LineChart lineChart;
     private LineChartUtil lineChartUtil;
@@ -91,6 +91,12 @@ public class EchartsActivity extends TwtBaseActivity{
     private String cache_filename; //存放缓存时的文件名
     private Queue<int[]> edfDataQueue = new LinkedList<>(); //存放解析后将要存入edf中的数据
     private int[] buf;
+    private Button start_data; // 开启数据渲染
+    private Button stop_data; //关闭数据渲染
+    private Button start_save; // 开启存储
+    private Button import_edf; //导出为edf
+    private Button record; //记录
+    private Button back; // 返回上一个界面
 
     /**
      * 数据渲染的类型
@@ -102,6 +108,7 @@ public class EchartsActivity extends TwtBaseActivity{
 
     private ReciveType state = ReciveType.DeviceData;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,79 +118,151 @@ public class EchartsActivity extends TwtBaseActivity{
             actionBar.hide();
             actionBar.setDisplayShowCustomEnabled(true);
         }
-        drawerLayout = findViewById(R.id.drawer_layout);
+//        drawerLayout = findViewById(R.id.drawer_layout);
         lineChart = findViewById(R.id.Chart);
         lineChartUtil = new LineChartUtil(lineChart);
-        open_Menu = (Button)findViewById(R.id.open_Menu);
-        open_Menu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //   Log.d(TAG, "点击打开菜单");
-                drawerLayout.openDrawer(GravityCompat.END);
-            }
-        });
+        //按钮组
+        start_data = (Button) findViewById(R.id.start_data);
+        stop_data = (Button) findViewById(R.id.stop_data);
+        start_save = (Button) findViewById(R.id.start_save);
+        import_edf = (Button) findViewById(R.id.import_edf);
+        record = (Button) findViewById(R.id.import_edf);
+        back = (Button) findViewById(R.id.back);
 
-        navigationView = (NavigationView)findViewById(R.id.nav_vew);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch (id){
-                    case R.id.start:
-                        switch (state){
-                            case DeviceData:
-                                EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
-                                twtBinder.setIEchaertsUpdate(echartsDataListenner);
-                                twtBinder.startReadData(BackgroundService.ECHARTS_DATA);
-                                break;
-                            case Import:
-                                ChartUpdateThread chartUpdateThread = new ChartUpdateThread();
-                                isRead = true;
-                                new Thread(chartUpdateThread).start();
-                                break;
-                        }
-                        //关闭侧滑菜单
-                        drawerLayout.closeDrawer(GravityCompat.END);
-                        break;
-                    case R.id.stop:
-                        switch (state){
-                            case DeviceData:
-                                twtBinder.stopReadData();
-                                break;
-                            case Import:
-                                isRead = false;
-                                break;
-                        }
-                        //关闭侧滑菜单
-                        drawerLayout.closeDrawer(GravityCompat.END);
-                        break;
-                    case R.id.Import:
-                        state = ReciveType.Import;
-                        ImportFile();
-                        //关闭侧滑菜单
-                        drawerLayout.closeDrawer(GravityCompat.END);
-                        break;
-                        //开启存储
-                    case R.id.start_save:
-                        StartSave();
-                        //关闭侧滑菜单
-                        drawerLayout.closeDrawer(GravityCompat.END);
-                        break;
-                        //关闭存储
-                    case R.id.stop_save:
-                        StopSave();
-                        //关闭侧滑菜单
-                        drawerLayout.closeDrawer(GravityCompat.END);
-                        break;
-                    case R.id.back:
-                        finish();
-                        break;
-                }
-                return false;
-            }
-        });
+        start_data.setOnClickListener(this);
+        stop_data.setOnClickListener(this);
+        start_save.setOnClickListener(this);
+        import_edf.setOnClickListener(this);
+        record.setOnClickListener(this);
+        back.setOnClickListener(this);
 
+        //初始化按钮状态
+        stop_data.setEnabled(false);
+        import_edf.setEnabled(false);
+
+//        open_Menu = (Button)findViewById(R.id.open_Menu);
+//        open_Menu.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                //   Log.d(TAG, "点击打开菜单");
+//                drawerLayout.openDrawer(GravityCompat.END);
+//            }
+//        });
+
+//        navigationView = (NavigationView)findViewById(R.id.nav_vew);
+//        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+//            @RequiresApi(api = Build.VERSION_CODES.O)
+//            @Override
+//            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//                int id = item.getItemId();
+//                switch (id){
+//                    case R.id.start:
+//                        switch (state){
+//                            case DeviceData:
+//                                EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
+//                                twtBinder.setIEchaertsUpdate(echartsDataListenner);
+//                                twtBinder.startReadData(BackgroundService.ECHARTS_DATA);
+//                                break;
+//                            case Import:
+//                                ChartUpdateThread chartUpdateThread = new ChartUpdateThread();
+//                                isRead = true;
+//                                new Thread(chartUpdateThread).start();
+//                                break;
+//                        }
+//                        //关闭侧滑菜单
+//                        drawerLayout.closeDrawer(GravityCompat.END);
+//                        break;
+//                    case R.id.stop:
+//                        switch (state){
+//                            case DeviceData:
+//                                twtBinder.stopReadData();
+//                                break;
+//                            case Import:
+//                                isRead = false;
+//                                break;
+//                        }
+//                        //关闭侧滑菜单
+//                        drawerLayout.closeDrawer(GravityCompat.END);
+//                        break;
+//                    case R.id.Import:
+//                        state = ReciveType.Import;
+//                        ImportFile();
+//                        //关闭侧滑菜单
+//                        drawerLayout.closeDrawer(GravityCompat.END);
+//                        break;
+//                        //开启存储
+//                    case R.id.start_save:
+//                        StartSave();
+//                        //关闭侧滑菜单
+//                        drawerLayout.closeDrawer(GravityCompat.END);
+//                        break;
+//                        //关闭存储
+//                    case R.id.stop_save:
+//                        StopSave();
+//                        //关闭侧滑菜单
+//                        drawerLayout.closeDrawer(GravityCompat.END);
+//                        break;
+//                    case R.id.back:
+//                        finish();
+//                        break;
+//                }
+//                return false;
+//            }
+//        });
+
+    }
+
+    /**
+     * 按钮组点击事件
+     * @param view
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.start_data: //开启数据渲染事件
+                switch (state){
+                    case DeviceData:
+                        EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
+                        twtBinder.setIEchaertsUpdate(echartsDataListenner);
+                        twtBinder.startReadData(BackgroundService.ECHARTS_DATA);
+                        break;
+                    case Import:
+                        ChartUpdateThread chartUpdateThread = new ChartUpdateThread();
+                        isRead = true;
+                        new Thread(chartUpdateThread).start();break;}
+                    start_data.setEnabled(false);
+                    stop_data.setEnabled(true);
+                break;
+            case R.id.stop_data: //停止数据渲染事件
+                 switch (state){
+                    case DeviceData:
+                        twtBinder.stopReadData();
+                        break;
+                    case Import:
+                        isRead = false;
+                        break;
+                     }
+                start_data.setEnabled(true);
+                stop_data.setEnabled(false);
+                break;
+            case R.id.start_save: //开始存储数据
+                StartSave();
+                start_save.setEnabled(false);
+                import_edf.setEnabled(true);
+                break;
+            case R.id.import_edf: //导出为edf
+                StopSave();
+                start_save.setEnabled(true);
+                import_edf.setEnabled(false);
+                break;
+            case R.id.recorde: //记录
+
+                break;
+            case R.id.back: //返回上一个界面
+                finish();
+                break;
+        }
     }
 
     /**
@@ -335,7 +414,6 @@ public class EchartsActivity extends TwtBaseActivity{
         }
 
         hdl.writeAnnotation(0, -1, "Recording starts");
-
         hdl.writeAnnotation(edfDataQueue.size() * 10000, -1, "Recording ends");
 
         try

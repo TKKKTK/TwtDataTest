@@ -3,31 +3,14 @@ package com.wg.twtdatatest.Data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class EchartsData implements Parcelable {
+import java.io.Serializable;
+
+public class EchartsData implements Serializable {
     private int dataPoint;
     private String time;
-
+    private boolean isRecord;
     public EchartsData(){
-
     }
-
-    //反序列化
-    protected EchartsData(Parcel in) {
-        dataPoint = in.readInt();
-        time = in.readString();
-    }
-
-    public static final Creator<EchartsData> CREATOR = new Creator<EchartsData>() {
-        @Override
-        public EchartsData createFromParcel(Parcel in) {
-            return new EchartsData(in);
-        }
-
-        @Override
-        public EchartsData[] newArray(int size) {
-            return new EchartsData[size];
-        }
-    };
 
     public int getDataPoint() {
         return dataPoint;
@@ -45,15 +28,20 @@ public class EchartsData implements Parcelable {
         this.time = time;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public boolean isRecord() {
+        return isRecord;
     }
 
-    //序列化
+    public void setRecord(boolean record) {
+        isRecord = record;
+    }
+
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(dataPoint);
-        parcel.writeString(time);
+    public String toString() {
+        return "EchartsData{" +
+                "dataPoint=" + dataPoint +
+                ", time='" + time + '\'' +
+                ", isRecord=" + isRecord +
+                '}';
     }
 }
