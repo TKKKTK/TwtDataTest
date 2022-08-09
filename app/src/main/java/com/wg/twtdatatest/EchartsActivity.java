@@ -2,64 +2,45 @@ package com.wg.twtdatatest;
 
 import static android.content.ContentValues.TAG;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.google.android.material.navigation.NavigationView;
-import com.wg.twtdatatest.Data.DataPacket;
 import com.wg.twtdatatest.Data.EchartsData;
 import com.wg.twtdatatest.Data.UiEchartsData;
 import com.wg.twtdatatest.EDFlib.EDFException;
 import com.wg.twtdatatest.EDFlib.EDFwriter;
 import com.wg.twtdatatest.Service.BackgroundService;
-import com.wg.twtdatatest.util.FileDownload;
 import com.wg.twtdatatest.util.LineChartUtil;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.wg.twtdatatest.util.MyObjectInputStream;
+import com.wg.twtdatatest.util.ObjectAppendOutputStream;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,12 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.lang.System;
 import java.util.Queue;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import no.nordicsemi.android.ble.data.Data;
 
 public class EchartsActivity extends TwtBaseActivity implements View.OnClickListener{
 
@@ -91,6 +66,17 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     private String cache_filename; //存放缓存时的文件名
     private Queue<int[]> edfDataQueue = new LinkedList<>(); //存放解析后将要存入edf中的数据
     private int[] buf;
+    //存放反序列化后的数据
+    private Queue<EchartsData> deserialization = new LinkedList<>();
+    //存放用于记录标签的数据
+    private Queue<EchartsData> tagDataQueue = new LinkedList<>();
+
+    private int count = 0;
+    private int reality = 0;
+
+    /**
+     * 按钮组
+     */
     private Button start_data; // 开启数据渲染
     private Button stop_data; //关闭数据渲染
     private Button start_save; // 开启存储
@@ -126,89 +112,19 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
         stop_data = (Button) findViewById(R.id.stop_data);
         start_save = (Button) findViewById(R.id.start_save);
         import_edf = (Button) findViewById(R.id.import_edf);
-        record = (Button) findViewById(R.id.import_edf);
+        record = (Button) findViewById(R.id.recorde);
         back = (Button) findViewById(R.id.back);
 
         start_data.setOnClickListener(this);
         stop_data.setOnClickListener(this);
         start_save.setOnClickListener(this);
         import_edf.setOnClickListener(this);
-        record.setOnClickListener(this);
+        //record.setOnClickListener(this);
         back.setOnClickListener(this);
 
         //初始化按钮状态
         stop_data.setEnabled(false);
         import_edf.setEnabled(false);
-
-//        open_Menu = (Button)findViewById(R.id.open_Menu);
-//        open_Menu.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                //   Log.d(TAG, "点击打开菜单");
-//                drawerLayout.openDrawer(GravityCompat.END);
-//            }
-//        });
-
-//        navigationView = (NavigationView)findViewById(R.id.nav_vew);
-//        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-//            @RequiresApi(api = Build.VERSION_CODES.O)
-//            @Override
-//            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//                int id = item.getItemId();
-//                switch (id){
-//                    case R.id.start:
-//                        switch (state){
-//                            case DeviceData:
-//                                EchartsDataListenner echartsDataListenner = new EchartsDataListenner();
-//                                twtBinder.setIEchaertsUpdate(echartsDataListenner);
-//                                twtBinder.startReadData(BackgroundService.ECHARTS_DATA);
-//                                break;
-//                            case Import:
-//                                ChartUpdateThread chartUpdateThread = new ChartUpdateThread();
-//                                isRead = true;
-//                                new Thread(chartUpdateThread).start();
-//                                break;
-//                        }
-//                        //关闭侧滑菜单
-//                        drawerLayout.closeDrawer(GravityCompat.END);
-//                        break;
-//                    case R.id.stop:
-//                        switch (state){
-//                            case DeviceData:
-//                                twtBinder.stopReadData();
-//                                break;
-//                            case Import:
-//                                isRead = false;
-//                                break;
-//                        }
-//                        //关闭侧滑菜单
-//                        drawerLayout.closeDrawer(GravityCompat.END);
-//                        break;
-//                    case R.id.Import:
-//                        state = ReciveType.Import;
-//                        ImportFile();
-//                        //关闭侧滑菜单
-//                        drawerLayout.closeDrawer(GravityCompat.END);
-//                        break;
-//                        //开启存储
-//                    case R.id.start_save:
-//                        StartSave();
-//                        //关闭侧滑菜单
-//                        drawerLayout.closeDrawer(GravityCompat.END);
-//                        break;
-//                        //关闭存储
-//                    case R.id.stop_save:
-//                        StopSave();
-//                        //关闭侧滑菜单
-//                        drawerLayout.closeDrawer(GravityCompat.END);
-//                        break;
-//                    case R.id.back:
-//                        finish();
-//                        break;
-//                }
-//                return false;
-//            }
-//        });
 
     }
 
@@ -295,8 +211,10 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void StopSave(){
         isSave = false;
-        dataCache(); // 将剩余的数据进行缓存
+        Log.d(TAG, "总共存储的数据量:"+count);
+        dataCache(); // 将剩余的数据进行缓存--序列化
         readCacheData(); //读取缓冲区数据
+        EdfDataSolution(); //edf数据解析
         WriteEdf(); //导出为EDF文件
         deleteFile(cache_filename);//删除缓冲区文件
     }
@@ -313,10 +231,19 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
         @Override
         public void DrawEcharts(UiEchartsData data) {
             UiEchartsData uiEchartsData = data;
+            for (EchartsData echartsData :uiEchartsData.getListPacket()){
+                record.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        echartsData.setRecord(true);
+                    }
+                });
+            }
             lineChartUtil.UpdateData(uiEchartsData);
             if (isSave){
                 catchData.add(uiEchartsData);
                 dataCache();
+                count += 5;
             }
 
         }
@@ -333,22 +260,39 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     }
 
     /**
-     * 数据缓存
+     * 数据缓存 -- 序列化
      */
     private void dataCache(){
-        StringBuilder stringBuilder = new StringBuilder();
-        while (!catchData.isEmpty()){
-            List<EchartsData> list = catchData.poll().getListPacket();
-            stringBuilder.append(listToString(list));
-        }
-        String content = stringBuilder.toString();
         try {
-            FileOutputStream outputStream = openFileOutput(cache_filename,Context.MODE_APPEND);
-            outputStream.write(content.getBytes());
-            outputStream.close();
-        }catch (IOException e){
+            while (!catchData.isEmpty()){
+                ObjectAppendOutputStream objectOutputStream = new ObjectAppendOutputStream(openFileOutput(cache_filename,Context.MODE_APPEND));
+                List<EchartsData> list = catchData.poll().getListPacket();
+//                for (EchartsData echartsData : list){
+                    objectOutputStream.writeObject(list);
+//                }
+                if (!isSave){
+                    objectOutputStream.writeObject(null);
+                }
+                objectOutputStream.flush();
+                objectOutputStream.close();
+            }
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
+//        StringBuilder stringBuilder = new StringBuilder();
+//        while (!catchData.isEmpty()){
+//            List<EchartsData> list = catchData.poll().getListPacket();
+//            stringBuilder.append(listToString(list));
+//        }
+//        String content = stringBuilder.toString();
+//        try {
+//            FileOutputStream outputStream = openFileOutput(cache_filename,Context.MODE_APPEND);
+//            outputStream.write(content.getBytes());
+//            outputStream.close();
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
     }
 
     /**
@@ -358,7 +302,7 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void WriteEdf()  {
         int i, err,
-                sf1=500, // 通道1的采样频率
+                sf1=250, // 通道1的采样频率
                 edfsignals = 1; //通道数
 
         EDFwriter hdl;
@@ -392,7 +336,10 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
         hdl.setSampleFrequency(0, sf1);
 
         //设置信号标签
-        hdl.setSignalLabel(0, String.format("sine 500Hz", 0 + 1));
+        hdl.setSignalLabel(0, String.format("sine 250Hz", 0 + 1));
+
+        int total = 0;
+        int count = tagDataQueue.size();
 
         try
         {
@@ -412,9 +359,19 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
             e.printStackTrace();
             return;
         }
-
         hdl.writeAnnotation(0, -1, "Recording starts");
-        hdl.writeAnnotation(edfDataQueue.size() * 10000, -1, "Recording ends");
+        /**
+         * 写入中间标签
+         */
+        while (!tagDataQueue.isEmpty()){
+            total++;
+            if (tagDataQueue.poll().isRecord()){
+                Log.d(TAG, "有记录");
+                hdl.writeAnnotation(calculateTime(total), -1, "Recording");
+            }
+        }
+
+        hdl.writeAnnotation(calculateTime(count), -1, "Recording ends");
 
         try
         {
@@ -431,6 +388,16 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
             e.printStackTrace();
             return;
         }
+    }
+
+    /**
+     * 计算当前点的时间 -- 用于记录标签
+     * @param total
+     * @return
+     */
+    private long calculateTime(int total){
+        float totalTime = (float) total/250 * 10000;
+        return (long)totalTime;
     }
 
     /**
@@ -518,42 +485,63 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     /**
      * EDF数据解析
      */
-    private void EdfDataSolution(String dataStr){
-        String[] dataArr = dataStr.split(" ");
-        Log.d("EdfDataSolution", "解析后的数据: "+ Arrays.toString(dataArr));
-        buf = new int[500];
+    private void EdfDataSolution(){
+//        String[] dataArr = dataStr.split(" ");
+//        Log.d("EdfDataSolution", "解析后的数据: "+ Arrays.toString(dataArr));
+        buf = new int[250];
         int index = 0;
-        for (int i = 0; i < dataArr.length; i++){
-            if (index == 500){
+        while (!deserialization.isEmpty()){
+            if (index == 250){
                 edfDataQueue.add(buf);
-                buf = new int[500];
+                buf = new int[250];
                 index = 0;
             }
-            buf[index] = Integer.parseInt(dataArr[i]);
+            buf[index] = deserialization.poll().getDataPoint();
             index++;
         }
     }
 
     /**
-     * 读取缓冲区数据
+     * 读取缓冲区数据 --即数据反序列化
      */
     private void readCacheData(){
         try {
-            StringBuilder stringBuilder = new StringBuilder();
-            FileInputStream inputStream = openFileInput(cache_filename);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader reader = new BufferedReader(inputStreamReader);
-            String line;
-            while((line = reader.readLine()) != null){
-                stringBuilder.append(line);
+            FileInputStream fileInputStream = openFileInput(cache_filename);
+            MyObjectInputStream objectInputStream = new MyObjectInputStream(fileInputStream);
+            List<EchartsData> echartsDataList = null;
+            while (fileInputStream.available()>0){
+                //Log.d(TAG, echartsData.toString());
+                echartsDataList = (List<EchartsData>)objectInputStream.readObject();
+                for (EchartsData echartsData : echartsDataList){
+                    deserialization.add(echartsData);
+                    tagDataQueue.add(echartsData);
+                }
             }
-            EdfDataSolution(stringBuilder.toString());
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d(TAG, "实际存储的数据量: "+tagDataQueue.size());
+            fileInputStream.close();
+            objectInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+
+//        try {
+//            StringBuilder stringBuilder = new StringBuilder();
+//            FileInputStream inputStream = openFileInput(cache_filename);
+//            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+//            BufferedReader reader = new BufferedReader(inputStreamReader);
+//            String line;
+//            while((line = reader.readLine()) != null){
+//                stringBuilder.append(line);
+//            }
+//            EdfDataSolution(stringBuilder.toString());
+//
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 

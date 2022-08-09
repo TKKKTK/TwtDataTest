@@ -31,6 +31,7 @@ public class LineChartUtil {
     private LineChart lineChart;
     private List<Entry> dataList = new ArrayList<>();
     private List<String> XLabel = new ArrayList<>();
+    private List<EchartsData> echartsDataList = new ArrayList<>();
     private LineData lineData;
     private LineDataSet lineDataSet;
     private int count = 0;
@@ -110,6 +111,8 @@ public class LineChartUtil {
 
         for (int i = 0;i<1000;i++){
             Entry entry = new Entry(i,0);
+            EchartsData echartsData = new EchartsData();
+            echartsDataList.add(echartsData);
             dataList.add(entry);
             XLabel.add(new SimpleDateFormat("HH:mm:ss:SS").format(new Date().getTime()));
         }
@@ -135,26 +138,33 @@ public class LineChartUtil {
 
     public void UpdateData(UiEchartsData uiEchartsData){
         List<EchartsData> datas = uiEchartsData.getListPacket();
-
         /**
          * 移除x轴、Y轴前面的数据
          */
         for (int i = 0; i<datas.size();i++){
+            echartsDataList.remove(0);
             dataList.remove(0);
             XLabel.remove(0);
         }
         for (int i = 0;i<dataList.size();i++){
             Entry entry = dataList.get(i);
-            dataList.set(i,new Entry(i,entry.getY()));
+
+            EchartsData echartsData = echartsDataList.get(i);
+            if (echartsData.isRecord()){
+                dataList.set(i,new Entry(i,0));
+            }else {
+                dataList.set(i,new Entry(i,entry.getY()));
+            }
+
         }
         for (int i = 0; i<datas.size();i++){
             Entry entry;
-//            count++;
-//            if (count % 250 == 0){
-//                entry = new Entry(dataList.size(),0);
-//            }else{
-                entry = new Entry(dataList.size(),datas.get(i).getDataPoint());
-//            }
+               if (datas.get(i).isRecord()){
+                   entry = new Entry(dataList.size(),0);
+               }else {
+                   entry = new Entry(dataList.size(),datas.get(i).getDataPoint());
+               }
+            echartsDataList.add(datas.get(i));
             dataList.add(entry);
             //更新x轴标签的数据
             XLabel.add(datas.get(i).getTime());
