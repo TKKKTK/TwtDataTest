@@ -28,10 +28,10 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class LineChartUtil {
-    private LineChart lineChart;
-    private List<Entry> dataList = new ArrayList<>();
-    private List<String> XLabel = new ArrayList<>();
-    private List<EchartsData> echartsDataList = new ArrayList<>();
+    private LineChart lineChart; //图表
+    private List<Entry> dataList = new ArrayList<>(); //存放X轴，Y轴数据
+    private List<String> XLabel = new ArrayList<>(); //存放X轴标签
+    private List<EchartsData> echartsDataList = new ArrayList<>(); //存放数据点对象
     private LineData lineData;
     private LineDataSet lineDataSet;
     private int count = 0;
@@ -136,8 +136,13 @@ public class LineChartUtil {
 
     }
 
+    /**
+     * 数据更新
+     * @param uiEchartsData
+     */
     public void UpdateData(UiEchartsData uiEchartsData){
         List<EchartsData> datas = uiEchartsData.getListPacket();
+
         /**
          * 移除x轴、Y轴前面的数据
          */
@@ -146,20 +151,26 @@ public class LineChartUtil {
             dataList.remove(0);
             XLabel.remove(0);
         }
+        /**
+         * 将数据往前移
+         */
         for (int i = 0;i<dataList.size();i++){
             Entry entry = dataList.get(i);
-
             EchartsData echartsData = echartsDataList.get(i);
             if (echartsData.isRecord()){
+                //Log.d("LineChartUtil", "前移时有记录："+echartsData.isRecord());
                 dataList.set(i,new Entry(i,0));
             }else {
                 dataList.set(i,new Entry(i,entry.getY()));
             }
-
         }
+        /**
+         * 往末尾添加数据
+         */
         for (int i = 0; i<datas.size();i++){
             Entry entry;
                if (datas.get(i).isRecord()){
+                   //Log.d("LineChartUtil", "刚添加进来时有记录");
                    entry = new Entry(dataList.size(),0);
                }else {
                    entry = new Entry(dataList.size(),datas.get(i).getDataPoint());
