@@ -918,7 +918,6 @@ private int write_annotations() throws IOException, UnsupportedEncodingException
     if(edf != 0)
     {
       offset += param_smp_per_record[i] * 2L;
-
       datrecsize += param_smp_per_record[i] * 2L;
     }
     else
