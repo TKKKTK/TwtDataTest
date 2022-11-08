@@ -67,9 +67,7 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     private String cache_filename; //存放缓存时的文件名
     private Queue<int[]> edfDataQueue = new LinkedList<>(); //存放解析后将要存入edf中的数据
 
-    private List<int[]> edfDataList = new LinkedList<>(); //存放解析后将要存入edf中的数据
-
-    private int[] buf;
+    private List<int[]> edfDataList = null; //存放解析后将要存入edf中的数据
     //存放反序列化后的数据
     private Queue<EchartsData> deserialization = new LinkedList<>();
     //存放用于记录标签的数据
@@ -253,8 +251,6 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
                 count += 5;
             }
             lineChartUtil.UpdateData(uiEchartsData);
-
-
         }
 
         /**
@@ -317,7 +313,7 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
         EDFwriter hdl;
         try
         {
-            hdl = new EDFwriter(getTimeRecord()+".edf", EDFwriter.EDFLIB_FILETYPE_EDFPLUS, edfsignals,EchartsActivity.this);
+            hdl = new EDFwriter(getTimeRecord()+".bdf", EDFwriter.EDFLIB_FILETYPE_BDFPLUS, edfsignals,EchartsActivity.this);
         }
         catch(IOException e)
         {
@@ -349,13 +345,12 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
 
         int total = 0;
         int totalCount = tagDataQueue.size();
+        int T = edfDataList.size();
         try
         {
-            for(i=0; i<edfDataList.size(); i++)
+            for(i=0; i<T; i++)
             {
-
                 err = hdl.writeDigitalSamples(edfDataList.get(i));
-                edfDataList.remove(i);
                 if(err != 0)
                 {
                     System.out.printf("writePhysicalSamples() returned error: %d\n", err);
@@ -375,17 +370,17 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
         /**
          * 写入中间标签
          */
-//        while (!tagDataQueue.isEmpty()){
-//            total++;
-//            if (tagDataQueue.poll().isRecord()){
-//                Log.d(TAG, "有记录");
-//                hdl.writeAnnotation(calculateTime(total), -1, "Recording");
-//            }
-//        }
+        while (!tagDataQueue.isEmpty()){
+            total++;
+            if (tagDataQueue.poll().isRecord()){
+                Log.d(TAG, "有记录");
+                hdl.writeAnnotation(calculateTime(total), -1, "Recording");
+            }
+        }
         /**
          * 结尾写入标签
          */
-        hdl.writeAnnotation(calculateTime(tagDataQueue.size()), -1, "Recording ends");
+        hdl.writeAnnotation(calculateTime(total), -1, "Recording ends");
 
         try
         {
@@ -497,22 +492,23 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
     }
 
     /**
-     * EDF数据解析
+     * 需要写入时的EDF数据解析
      */
     private void EdfDataSolution(){
 //        String[] dataArr = dataStr.split(" ");
 //        Log.d("EdfDataSolution", "解析后的数据: "+ Arrays.toString(dataArr));
-        double T = Math.ceil ((double) deserialization.size()/250);
+        double T = Math.ceil ((double) deserialization.size()/250); //向上取整
+        edfDataList = new LinkedList<>();
         //初始化将要写入edf数据的容器
         for (int i = 0; i < T; i++){
-             buf = new int[250];
+             int[] buf = new int[250];
              edfDataList.add(buf);
         }
-        //int fuck = 0;
+        int fuck = 0;
         //遍历写入数据
         for (int i = 0;i < edfDataList.size();i++){
             for (int j =0;j < edfDataList.get(i).length; j++ ){
-                //fuck ++;
+                fuck ++;
                 if (!deserialization.isEmpty()){
                     edfDataList.get(i)[j] = deserialization.poll().getDataPoint();
                 }else{
@@ -520,7 +516,7 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
                 }
             }
         }
-        //Log.d(TAG, "写入EDF时的数据量: "+fuck);
+        Log.d(TAG, "写入EDF时的数据量: "+fuck);
     }
 
     /**
@@ -544,7 +540,7 @@ public class EchartsActivity extends TwtBaseActivity implements View.OnClickList
                         tagDataQueue.add(echartsData);
 //                        if (echartsData.isRecord()){
 //                            Log.d(TAG, "是否有记录: "+echartsData.isRecord());
-//                        }
+//                        }echartsDataList = {ArrayList@13425}  size = 5
 //                        dataList.add(echartsData.getDataPoint());
                         RealityCount++;
                     }

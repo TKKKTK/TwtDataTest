@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -118,25 +119,15 @@ public class ScanActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("MissingPermission")
     private void openBluetooth() {
         //获取蓝牙适配器
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter != null) {//是否支持蓝牙
-            if (bluetoothAdapter.isEnabled()) {
-                //蓝牙已打开
-//                showMsg("蓝牙已打开");
-//                startScan();
-            } else {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                startActivityIfNeeded(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BLUETOOTH);
-//                startScan();
+            if (!bluetoothAdapter.isEnabled()) {
+                bluetoothAdapter.enable();
             }
-        }else{
-            //设备不支持蓝牙
-            // showMsg("设备不支持蓝牙");
         }
     }
 

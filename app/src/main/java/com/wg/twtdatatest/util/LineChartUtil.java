@@ -42,7 +42,6 @@ public class LineChartUtil {
         SetXAxis();
         SetYAxis();
         initLineDataSet("方波图",Color.BLUE);
-
     }
 
     /**
@@ -65,7 +64,6 @@ public class LineChartUtil {
         lineChart.setBorderColor(Color.parseColor("#d5d5d5"));
         lineChart.getAxisRight().setEnabled(false);//关闭右侧Y轴
         lineChart.setTouchEnabled(false);
-
 
         //折线图例 标签 设置 这里不显示图例
         Legend legend = lineChart.getLegend();

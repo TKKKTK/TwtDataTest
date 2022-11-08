@@ -74,6 +74,21 @@ public class BackgroundService extends Service {
         }
 
         /**
+         * 开启通知
+         */
+         public void openNotifications(int state){
+             STATE = state;
+             twtManager.startNotifications();
+         }
+
+        /**
+         * 关闭通知
+         */
+        public void closeNotifications(){
+            twtManager.stopNotifications();
+        }
+
+        /**
          * 开启数据读取
          */
         public void startReadData(int state){
@@ -193,7 +208,6 @@ public class BackgroundService extends Service {
         }else {
             DataInt &= 0x00FFFFFF;
         }
-
         return DataInt;
     }
 

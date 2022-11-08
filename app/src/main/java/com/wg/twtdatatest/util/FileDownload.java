@@ -166,6 +166,50 @@ public class FileDownload {
     }
 
     /**
+     * 根据uri保存16进制数据
+     */
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void save(Uri uri){
+        String content = listToString(); // 存储内容解析
+        //判断当前android 版本是否支持分区存储
+        if (!Environment.isExternalStorageLegacy()){
+            OutputStream outputStream = null;
+            try {
+                outputStream = context.getContentResolver().openOutputStream(uri);
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(content.getBytes());
+                bos.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else{
+            //String filePath = "/sdcard/";
+            //传统File方式
+            File file = new File(uri.getPath());
+            OutputStream outputStream = null;
+            if (!file.exists()){
+                try {
+                    file.createNewFile();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                outputStream = new FileOutputStream(file);
+                outputStream.write(content.getBytes());
+                outputStream.close();
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    /**
      * 根据对应的uri来进行存储
      * @param uri
      */
@@ -225,10 +269,16 @@ public class FileDownload {
         if (dataList.size()>0){
             for (DataPacket dataPacket : dataList){
                 stringBuilder.append(dataPacket.getData());
+                stringBuilder.append("              ");
             }
         }
         return stringBuilder.toString();
     }
+
+
+    /**
+     * 选择保存路径
+     */
 
 
 }

@@ -11,17 +11,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +39,11 @@ import com.wg.twtdatatest.Service.BackgroundService;
 import com.wg.twtdatatest.util.FileDownload;
 import com.wg.twtdatatest.adapter.TwtDataAdapter;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,8 +53,12 @@ import no.nordicsemi.android.ble.data.Data;
 
 public class DeviceActivity extends TwtBaseActivity{
 
+    private static final int SAVE_CODE = 200;
     private Button resivice_button;
     private Button stop_resivice;
+    private Button zhiding_button;
+    private Button open_Inform;
+    private Button close_Inform;
     private List<DataPacket> dataList = new ArrayList<>();
     private TwtDataAdapter twtDataAdapter;
     private EditText file_name;
@@ -58,7 +71,6 @@ public class DeviceActivity extends TwtBaseActivity{
     private FloatingActionButton download;
     private FloatingActionButton echarts;
     private DataListReceiver dataListReceiver; //接收后台服务的广播
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +111,41 @@ public class DeviceActivity extends TwtBaseActivity{
                 isResivice = false;
                 resivice_button.setVisibility(View.VISIBLE);
                 stop_resivice.setVisibility(View.GONE);
+            }
+        });
+
+       open_Inform = (Button)findViewById(R.id.open_inform);
+       close_Inform = (Button)findViewById(R.id.close_inform);
+       open_Inform.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               dataListThread = new DataListThread();
+               isResivice = true;
+               dataListThread.start();
+               //开启数据接收通知
+               twtBinder.openNotifications(BackgroundService.LIST_DATA);
+               open_Inform.setVisibility(View.GONE);
+               close_Inform.setVisibility(View.VISIBLE);
+           }
+       });
+       close_Inform.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               //关闭数据接收通知
+               twtBinder.closeNotifications();
+               isResivice = false;
+               open_Inform.setVisibility(View.VISIBLE);
+               close_Inform.setVisibility(View.GONE);
+           }
+       });
+
+
+        zhiding_button = (Button)findViewById(R.id.zhiding);
+        zhiding_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //将RecyclerView定位到第一行
+                recyclerView.scrollToPosition(0);
             }
         });
 
@@ -166,10 +213,7 @@ public class DeviceActivity extends TwtBaseActivity{
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+
 
     //接收数据的广播
     class DataListReceiver extends BroadcastReceiver{
@@ -179,7 +223,7 @@ public class DeviceActivity extends TwtBaseActivity{
             //Toast.makeText(DeviceActivity.this,"数据接收",Toast.LENGTH_LONG).show();
             DataPacket dataPacket = intent.getParcelableExtra("LIST_DATA");
             //脱落检测
-            DataSolation(dataPacket.getData().toString());
+            //DataSolation(dataPacket.getData().toString());
             dataList.add(dataPacket);
             count++;
             //Log.d("DeviceActivity", "onReceive: "+dataPacket.getData());
@@ -265,6 +309,37 @@ public class DeviceActivity extends TwtBaseActivity{
                }
         }
     };
+
+
+    /**
+     * 选择对应的保存路径
+     */
+    private void openFileSave(){
+        Uri uri = MediaStore.Files.getContentUri("external");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/txt");
+        intent.putExtra(Intent.EXTRA_TITLE, getTimeRecord()+".txt");
+
+        // Optionally, specify a URI for the directory that should be opened in
+        // the system file picker when your app creates the document.
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uri);
+        startActivityIfNeeded(intent,SAVE_CODE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        /**
+         * 文件保存结果回调
+         */
+        if (requestCode == SAVE_CODE && resultCode == RESULT_OK){
+            FileDownload fileDownload = new FileDownload(DeviceActivity.this,dataList);
+            fileDownload.save(data.getData());
+        }
+    }
+
 
     public String getTimeRecord(){
         return new SimpleDateFormat("HH:mm:ss:SS").format(new Date());

@@ -6,19 +6,40 @@
     android:layout_height="match_parent"
     tools:context=".DeviceActivity"
     android:orientation="vertical">
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
     <Button
         android:id="@+id/resivice_button"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="开始接收"/>
 
     <Button
         android:id="@+id/stop_resivice"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="停止接收"
         android:visibility="gone"/>
+    <Button
+        android:id="@+id/zhiding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="置顶"/>
+    <Button
+        android:id="@+id/open_inform"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开启通知"/>
+    <Button
+        android:id="@+id/close_inform"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="关闭通知"
+        android:visibility="gone"/>
+</LinearLayout>
+
     <LinearLayout
         android:id="@+id/file_layout"
         android:layout_width="match_parent"
